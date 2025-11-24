@@ -2,30 +2,29 @@ import { createMemo, createSignal } from "solid-js";
 import {
 	generatePalette,
 	isValidHex,
-	type Palette,
 } from "../utils/color-utils";
 
 export default function Home() {
-	const [name, setName] = createSignal("primary");
-	const [input, setInput] = createSignal("#3b82f6"); // Default to blue-500
-	const [palette, setPalette] = createSignal<Palette[]>(
-		generatePalette("#3b82f6"),
-	);
+	const [color, setColor] = createSignal({
+		name: "primary",
+		input: "#3b82f6", // Default to blue-500
+		palette: generatePalette("#3b82f6"),
+	});
 
 	const handleInput = (e: Event) => {
 		const target = e.target as HTMLInputElement;
 		const value = target.value;
-		setInput(value);
+		setColor({ ...color(), input: value });
 
 		if (isValidHex(value)) {
-			setPalette(generatePalette(value));
+			setColor({ ...color(), palette: generatePalette(value) });
 		}
 	};
 
 	const cssOutput = createMemo(() => {
-		const colorName = name().trim() || "primary";
-		return palette()
-			.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
+		const colorName = color().name.trim() || "primary";
+		return color()
+			.palette.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
 			.join("\n");
 	});
 
@@ -53,8 +52,8 @@ export default function Home() {
 							<input
 								id="name-input"
 								type="text"
-								value={name()}
-								onInput={(e) => setName(e.target.value)}
+								value={color().name}
+								onInput={(e) => setColor({ ...color(), name: e.target.value })}
 								class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm"
 								placeholder="primary"
 							/>
@@ -73,7 +72,7 @@ export default function Home() {
 							<input
 								id="color-input"
 								type="text"
-								value={input()}
+								value={color().input}
 								onInput={handleInput}
 								class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm"
 								placeholder="#000000"
@@ -85,7 +84,7 @@ export default function Home() {
 					</div>
 
 					<div class="max-w-2xl mx-auto space-y-2">
-						{palette().map((item) => (
+						{color().palette.map((item) => (
 							<div
 								class={`flex items-center justify-between p-4 rounded-lg shadow-sm transition-all ${
 									item.isClosest
