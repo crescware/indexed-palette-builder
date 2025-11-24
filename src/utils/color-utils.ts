@@ -62,7 +62,7 @@ export function generatePalette(hex: string): Palette[] {
 				isClosest: shade === closestShade,
 			};
 		})
-		.sort((a, b) => b.shade - a.shade); // Descending order as requested
+		.sort((a, b) => a.shade - b.shade); // Ascending order: light (0) to dark (1000)
 }
 
 export function isValidHex(hex: string): boolean {

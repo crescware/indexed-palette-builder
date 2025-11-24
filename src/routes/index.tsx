@@ -33,109 +33,80 @@ export default function Home() {
 	};
 
 	return (
-		<main class="text-center mx-auto text-gray-700 p-4 min-h-screen bg-gray-50">
-			<h1 class="max-6-xs text-4xl text-sky-700 font-thin uppercase my-8">
+		<main class="text-center mx-auto text-gray-700 h-screen bg-gray-50 flex flex-col overflow-hidden">
+			<h1 class="max-6-xs text-2xl text-sky-700 font-thin uppercase my-3 px-4">
 				Indexed Palette Builder
 			</h1>
 
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+			<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 max-w-7xl w-full mx-auto flex-1 min-h-0 px-4 pb-4">
 				{/* Left Column: Palette Builder */}
-				<div>
-					<div class="max-w-md mx-auto mb-8 space-y-4">
-						<div>
-							<label
-								for="name-input"
-								class="block text-sm font-medium text-gray-700 mb-2"
-							>
-								Color Name
-							</label>
-							<input
-								id="name-input"
-								type="text"
-								value={color().name}
-								onInput={(e) => setColor({ ...color(), name: e.target.value })}
-								class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm"
-								placeholder="primary"
-							/>
-							<p class="mt-2 text-sm text-gray-500">
-								Used in CSS variable names (e.g., --color-primary-500)
-							</p>
-						</div>
-
-						<div>
-							<label
-								for="color-input"
-								class="block text-sm font-medium text-gray-700 mb-2"
-							>
-								Enter RGB Hex Color
-							</label>
-							<input
-								id="color-input"
-								type="text"
-								value={color().input}
-								onInput={handleInput}
-								class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm"
-								placeholder="#000000"
-							/>
-							<p class="mt-2 text-sm text-gray-500">
-								Try entering a hex code like #3b82f6
-							</p>
-						</div>
-					</div>
-
-					<div class="max-w-2xl mx-auto space-y-2">
-						{color().palette.map((item) => (
-							<div
-								class={`flex items-center justify-between p-4 rounded-lg shadow-sm transition-all ${
-									item.isClosest
-										? "ring-2 ring-sky-500 scale-105 z-10"
-										: "hover:bg-gray-100"
-								}`}
-								style={{ "background-color": item.hex }}
-							>
-								<span
-									class={`font-mono font-bold ${
-										item.shade > 500 ? "text-white" : "text-black"
-									}`}
+				<div class="flex flex-col gap-3 min-h-0 overflow-hidden">
+					<div class="flex gap-3 items-center min-w-0">
+						{/* Input fields on the left */}
+						<div class="flex-shrink-0 w-36 space-y-2">
+							<div>
+								<label
+									for="name-input"
+									class="block text-xs font-medium text-gray-700 mb-1"
 								>
-									{item.shade}
-								</span>
-								<span
-									class={`font-mono uppercase ${
-										item.shade > 500 ? "text-white/80" : "text-black/80"
-									}`}
-								>
-									{item.hex}
-								</span>
-								{item.isClosest && (
-									<span
-										class={`text-xs font-bold px-2 py-1 rounded-full ${
-											item.shade > 500
-												? "bg-white/20 text-white"
-												: "bg-black/10 text-black"
-										}`}
-									>
-										Closest
-									</span>
-								)}
+									Color Name
+								</label>
+								<input
+									id="name-input"
+									type="text"
+									value={color().name}
+									onInput={(e) => setColor({ ...color(), name: e.target.value })}
+									class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm"
+									placeholder="primary"
+								/>
 							</div>
-						))}
+
+							<div>
+								<label
+									for="color-input"
+									class="block text-xs font-medium text-gray-700 mb-1"
+								>
+									Hex Color
+								</label>
+								<input
+									id="color-input"
+									type="text"
+									value={color().input}
+									onInput={handleInput}
+									class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm"
+									placeholder="#000000"
+								/>
+							</div>
+						</div>
+
+						{/* Color squares arranged horizontally */}
+						<div class="flex-1 grid grid-cols-13 gap-[1%] min-w-0">
+							{color().palette.map((item) => (
+								<div
+									class={`aspect-square rounded transition-all ${
+										item.isClosest ? "ring-2 ring-sky-500" : ""
+									}`}
+									style={{ "background-color": item.hex }}
+									title={`${item.shade}: ${item.hex}`}
+								/>
+							))}
+						</div>
 					</div>
 				</div>
 
 				{/* Right Column: CSS Export */}
-				<div class="flex flex-col h-full">
+				<div class="flex flex-col min-h-0">
 					<div class="flex justify-between items-center mb-2">
 						<label
 							for="css-output"
-							class="block text-sm font-medium text-gray-700"
+							class="block text-xs font-medium text-gray-700"
 						>
 							CSS Variables
 						</label>
 						<button
 							type="button"
 							onClick={copyToClipboard}
-							class="px-3 py-1 text-sm bg-sky-600 text-white rounded hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+							class="px-2 py-1 text-xs bg-sky-600 text-white rounded hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
 						>
 							Copy CSS
 						</button>
@@ -144,7 +115,7 @@ export default function Home() {
 						id="css-output"
 						readonly
 						textContent={cssOutput()}
-						class="w-full h-96 lg:h-full p-4 font-mono text-sm border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm resize-none"
+						class="w-full flex-1 min-h-0 p-3 font-mono text-xs border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm resize-none"
 					/>
 				</div>
 			</div>
