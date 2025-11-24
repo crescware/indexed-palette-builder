@@ -154,13 +154,16 @@ export default function Home() {
 						{/* Color squares arranged horizontally */}
 						<div class="flex-1 grid grid-cols-13 gap-[1%] min-w-0">
 							{color().palette.map((item) => (
-								<div
-									class={`aspect-square rounded transition-all ${
-										item.isClosest ? "ring-2 ring-sky-500" : ""
-									}`}
-									style={{ "background-color": item.hex }}
-									title={`${item.shade}: ${item.hex}`}
-								/>
+								<div class="flex flex-col items-center gap-1">
+									<div
+										class="aspect-square rounded transition-all w-full"
+										style={{ "background-color": item.hex }}
+										title={`${item.shade}: ${item.hex}`}
+									/>
+									{item.isClosest && (
+										<div class="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
+									)}
+								</div>
 							))}
 						</div>
 					</div>
