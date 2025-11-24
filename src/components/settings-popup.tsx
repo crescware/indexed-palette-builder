@@ -7,6 +7,8 @@ type Props = Readonly<{
 	setIsOpen: Setter<boolean>;
 	theme: Accessor<"light" | "dark" | "system">;
 	applyTheme: (theme: "light" | "dark" | "system") => void;
+	showEdgeShades: Accessor<boolean>;
+	setShowEdgeShades: Setter<boolean>;
 }>;
 
 export function SettingsPopup(props: Props) {
@@ -72,6 +74,21 @@ export function SettingsPopup(props: Props) {
 								</span>
 							</label>
 						</div>
+					</div>
+					<div>
+						<label class="flex items-center cursor-pointer">
+							<input
+								type="checkbox"
+								checked={props.showEdgeShades()}
+								onInput={(e) =>
+									props.setShowEdgeShades(e.currentTarget.checked)
+								}
+								class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 rounded focus:ring-sky-500"
+							/>
+							<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+								Show edge shades (0/1000)
+							</span>
+						</label>
 					</div>
 				</div>
 			</div>

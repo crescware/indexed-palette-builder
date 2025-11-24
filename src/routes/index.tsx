@@ -1,5 +1,5 @@
 import { Settings } from "lucide-solid";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { isServer } from "solid-js/web";
 
 import { SettingsPopup } from "../components/settings-popup";
@@ -14,6 +14,7 @@ export default function Home() {
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
 	const [theme, setTheme] = createSignal<"light" | "dark" | "system">("system");
+	const [showEdgeShades, setShowEdgeShades] = createSignal(false);
 	let settingsContainerRef: HTMLDivElement | undefined;
 
 	const applyTheme = (newTheme: "light" | "dark" | "system") => {
@@ -68,10 +69,30 @@ export default function Home() {
 		}
 	};
 
+	const displayedPalette = createMemo(() => {
+		const palette = color().palette;
+		if (showEdgeShades()) {
+			return palette;
+		}
+		return palette.filter((item) => item.shade !== 0 && item.shade !== 1000);
+	});
+
+	const gridColumns = createMemo(() => displayedPalette().length);
+
+	const hiddenClosestEdgeShade = createMemo(() => {
+		if (showEdgeShades()) return null;
+		const closest = color().palette.find((item) => item.isClosest);
+		if (closest && (closest.shade === 0 || closest.shade === 1000)) {
+			return closest.shade;
+		}
+		return null;
+	});
+
 	const cssOutput = createMemo(() => {
 		const colorName = color().name.trim() || "primary";
 		return color()
-			.palette.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
+			.palette.filter((item) => item.shade !== 0 && item.shade !== 1000)
+			.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
 			.join("\n");
 	});
 
@@ -104,6 +125,8 @@ export default function Home() {
 						setIsOpen={setIsSettingsOpen}
 						theme={theme}
 						applyTheme={applyTheme}
+						showEdgeShades={showEdgeShades}
+						setShowEdgeShades={setShowEdgeShades}
 					/>
 				</div>
 			</div>
@@ -152,19 +175,33 @@ export default function Home() {
 						</div>
 
 						{/* Color squares arranged horizontally */}
-						<div class="flex-1 grid grid-cols-13 gap-[1%] min-w-0">
-							{color().palette.map((item) => (
-								<div class="flex flex-col items-center gap-1">
-									<div
-										class="aspect-square rounded transition-all w-full"
-										style={{ "background-color": item.hex }}
-										title={`${item.shade}: ${item.hex}`}
-									/>
-									{item.isClosest && (
-										<div class="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
-									)}
+						<div class="flex-1 flex flex-col items-center min-w-0">
+							<div
+								class="w-full grid gap-[1%]"
+								style={{
+									"grid-template-columns": `repeat(${gridColumns()}, 1fr)`,
+								}}
+							>
+								{displayedPalette().map((item) => (
+									<div class="flex flex-col items-center gap-1">
+										<div
+											class="aspect-square rounded transition-all w-full"
+											style={{ "background-color": item.hex }}
+											title={`${item.shade}: ${item.hex}`}
+										/>
+										{item.isClosest && (
+											<div class="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
+										)}
+									</div>
+								))}
+							</div>
+
+							{/* Detection message for hidden edge shades */}
+							<Show when={hiddenClosestEdgeShade() !== null}>
+								<div class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+									Closest to edge shade {hiddenClosestEdgeShade()}
 								</div>
-							))}
+							</Show>
 						</div>
 					</div>
 				</div>
