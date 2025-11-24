@@ -1,6 +1,8 @@
-import { Settings, X } from "lucide-solid";
-import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
+import { Settings } from "lucide-solid";
+import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { isServer } from "solid-js/web";
+
+import { SettingsPopup } from "../components/settings-popup";
 import { generatePalette, isValidHex } from "../utils/color-utils";
 
 export default function Home() {
@@ -15,30 +17,29 @@ export default function Home() {
 	let settingsContainerRef: HTMLDivElement | undefined;
 
 	const applyTheme = (newTheme: "light" | "dark" | "system") => {
-		if (isServer) return;
+		if (isServer) {
+			return;
+		}
 
 		const root = document.documentElement;
 
-		if (newTheme === "light") {
-			root.classList.remove("dark");
-		} else if (newTheme === "dark") {
+		const preferredTheme =
+			newTheme === "system"
+				? window.matchMedia("(prefers-color-scheme: dark)").matches
+					? "dark"
+					: "light"
+				: newTheme;
+
+		if (preferredTheme === "dark") {
 			root.classList.add("dark");
-		} else if (newTheme === "system") {
-			const prefersDark = window.matchMedia(
-				"(prefers-color-scheme: dark)",
-			).matches;
-			if (prefersDark) {
-				root.classList.add("dark");
-			} else {
-				root.classList.remove("dark");
-			}
+		} else {
+			root.classList.remove("dark");
 		}
 
 		setTheme(newTheme);
 	};
 
 	onMount(() => {
-		// Apply initial theme
 		applyTheme(theme());
 
 		const handleClickOutside = (event: MouseEvent) => {
@@ -84,6 +85,7 @@ export default function Home() {
 				<h1 class="max-6-xs text-2xl text-sky-700 dark:text-sky-400 font-thin uppercase my-3 px-4">
 					Indexed Palette Builder
 				</h1>
+
 				<div
 					class="absolute top-1/2 -translate-y-1/2 right-4"
 					ref={settingsContainerRef}
@@ -97,72 +99,12 @@ export default function Home() {
 						<Settings size={20} />
 					</button>
 
-					{/* Settings Popup */}
-					<Show when={isSettingsOpen()}>
-						<div class="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 w-64 z-50">
-							<div class="flex justify-between items-center mb-3">
-								<h2 class="text-base font-semibold text-gray-800 dark:text-gray-200">
-									Settings
-								</h2>
-								<button
-									type="button"
-									onClick={() => setIsSettingsOpen(false)}
-									class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-									aria-label="Close settings"
-								>
-									<X size={20} />
-								</button>
-							</div>
-							<div class="space-y-4">
-								<div>
-									<div class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-										Color Theme
-									</div>
-									<div class="space-y-2">
-										<label class="flex items-center cursor-pointer">
-											<input
-												type="radio"
-												name="theme"
-												value="light"
-												checked={theme() === "light"}
-												onInput={() => applyTheme("light")}
-												class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
-											/>
-											<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-												Light
-											</span>
-										</label>
-										<label class="flex items-center cursor-pointer">
-											<input
-												type="radio"
-												name="theme"
-												value="dark"
-												checked={theme() === "dark"}
-												onInput={() => applyTheme("dark")}
-												class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
-											/>
-											<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-												Dark
-											</span>
-										</label>
-										<label class="flex items-center cursor-pointer">
-											<input
-												type="radio"
-												name="theme"
-												value="system"
-												checked={theme() === "system"}
-												onInput={() => applyTheme("system")}
-												class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
-											/>
-											<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-												System
-											</span>
-										</label>
-									</div>
-								</div>
-							</div>
-						</div>
-					</Show>
+					<SettingsPopup
+						isOpen={isSettingsOpen}
+						setIsOpen={setIsSettingsOpen}
+						theme={theme}
+						applyTheme={applyTheme}
+					/>
 				</div>
 			</div>
 
