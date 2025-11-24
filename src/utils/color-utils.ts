@@ -122,7 +122,7 @@ export function generatePalette(hexInput: string): PaletteStep[] {
 	const defaultC = pattern[closestShade].c;
 
 	// If defaultC is 0 (shades 0/1000 or pure gray), use scale ratio of 1
-	const chromaScale = defaultC > 0.001 ? inputC / defaultC : 1;
+	const chromaScale = 0.001 < defaultC ? inputC / defaultC : 1;
 
 	// 4. Generate palette
 	return Object.entries(pattern)
