@@ -3,7 +3,7 @@ import { converter, formatHex, type Oklch } from "culori";
 const toOklch = converter("oklch");
 
 // Approximate lightness values for Tailwind shades
-const TAILWIND_LIGHTNESS = {
+const tailwindLightness = {
 	50: 0.9778,
 	100: 0.9356,
 	200: 0.8811,
@@ -27,7 +27,7 @@ export function getClosestTailwindShade(l: number): number {
 	let closestShade = 500;
 	let minDiff = Number.MAX_VALUE;
 
-	for (const [shade, lightness] of Object.entries(TAILWIND_LIGHTNESS)) {
+	for (const [shade, lightness] of Object.entries(tailwindLightness)) {
 		const diff = Math.abs(l - lightness);
 		if (diff < minDiff) {
 			minDiff = diff;
@@ -46,7 +46,7 @@ export function generatePalette(hex: string): Palette[] {
 
 	const closestShade = getClosestTailwindShade(oklch.l);
 
-	return Object.entries(TAILWIND_LIGHTNESS)
+	return Object.entries(tailwindLightness)
 		.map(([shadeStr, lightness]) => {
 			const shade = Number(shadeStr);
 			const newColor: Oklch = {
