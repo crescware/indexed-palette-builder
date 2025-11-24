@@ -4,6 +4,7 @@ const toOklch = converter("oklch");
 
 // Approximate lightness values for Tailwind shades
 const tailwindLightness = {
+	0: 1,
 	50: 0.9778,
 	100: 0.9356,
 	200: 0.8811,
@@ -15,6 +16,7 @@ const tailwindLightness = {
 	800: 0.3172,
 	900: 0.2523,
 	950: 0.1652,
+	1000: 0,
 };
 
 export type Palette = {
