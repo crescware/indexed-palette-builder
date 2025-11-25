@@ -307,13 +307,14 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 	return warmRedPattern;
 }
 
-function getClosestShade(
-	l: number,
-	h: number,
+function calcClosest(
 	pattern: Record<number, ShadeValues>,
-): number {
-	// Collect all candidates with their distances and sort by distance
-	const [closest, secondClosest] = Object.entries(pattern)
+	l: number,
+): {
+	closest: { shade: number; diff: number };
+	secondClosest: { shade: number; diff: number } | null;
+} {
+	const sortedCandidates = Object.entries(pattern)
 		.reduce<{ shade: number; diff: number }[]>((acc, [shadeStr, values]) => {
 			const diff = Math.abs(l - values.l);
 			acc.push({ shade: Number(shadeStr), diff });
@@ -321,17 +322,38 @@ function getClosestShade(
 		}, [])
 		.sort((a, b) => a.diff - b.diff);
 
+	const [closest, secondClosest] = sortedCandidates;
+
+	return { closest, secondClosest: secondClosest ?? null };
+}
+
+function hasCompetingMidShades(
+	closest: ReturnType<typeof calcClosest>["closest"],
+	secondClosest: ReturnType<typeof calcClosest>["secondClosest"],
+): boolean {
+	return (
+		secondClosest !== null &&
+		closest.shade === 400 &&
+		secondClosest.shade === 500 &&
+		Math.abs(closest.diff - secondClosest.diff) < 0.015
+	);
+}
+
+function getClosestShade(
+	l: number,
+	h: number,
+	pattern: Record<number, ShadeValues>,
+): number {
+	const { closest, secondClosest } = calcClosest(pattern, l);
+
 	// Special handling for edge case: amber 500 with orangePattern
 	// When a color is near a hue boundary and has close competitors,
 	// prefer the shade that better represents the boundary position
 	if (
-		secondClosest &&
 		pattern === orangePattern &&
 		h > 65 && // Close to orange/yellow boundary
 		l > 0.75 && // In the 500 range lightness
-		closest.shade === 400 &&
-		secondClosest.shade === 500 &&
-		Math.abs(closest.diff - secondClosest.diff) < 0.015
+		hasCompetingMidShades(closest, secondClosest)
 	) {
 		return 500; // Prefer 500 for boundary colors
 	}
