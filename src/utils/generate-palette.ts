@@ -9,7 +9,7 @@ type ShadeValues = { l: number; c: number };
 const chromaThresholds$ = {
 	definitelyGray: literal(0.005),
 	veryLow: literal(0.008),
-	lowLightNeutral: literal(0.01),
+	lowLightNeutral: literal(0.015),
 	warmNeutral: literal(0.014),
 	low: literal(0.05),
 } as const;
@@ -25,7 +25,7 @@ const hueBoundaries$ = {
 	greenCyan: literal(215),
 	cyanSky: literal(230),
 	skyBlue: literal(250),
-	bluePink: literal(320),
+	bluePink: literal(318),
 } as const;
 
 const hueRanges$ = {
