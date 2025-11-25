@@ -47,7 +47,10 @@ describe("generatePaletteFromOklchString", () => {
 			shadeNumber,
 		}) => {
 			const colorShade = color?.grid.find((g) => g.number === shadeNumber);
-			const palette = generatePaletteFromOklchString(colorShade?.value);
+			if (!colorShade) {
+				throw new Error(`Color shade ${shadeNumber} not found`);
+			}
+			const palette = generatePaletteFromOklchString(colorShade.value);
 			const closestSteps = palette.filter((step) => step.isClosest);
 
 			expect(closestSteps[0].shade).toBe(shadeNumber);
