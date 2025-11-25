@@ -1,6 +1,4 @@
-import { converter, formatHex, type Oklch } from "culori";
-
-import { parseAsOklch } from "./parse-as-oklch";
+import { converter, formatHex, parse, type Oklch } from "culori";
 
 const toOklch = converter("oklch");
 
@@ -153,20 +151,20 @@ export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 
 export function generatePaletteFromHex(hexInput: string): PaletteStep[] {
 	const oklchColor = toOklch(hexInput);
-	if (!oklchColor) return [];
-
+	if (!oklchColor) {
+		throw new Error("Invalid hex color");
+	}
 	return generatePalette(oklchColor);
 }
 
 export function generatePaletteFromOklchString(
 	oklchString: string,
 ): PaletteStep[] {
-	try {
-		const oklchColor = parseAsOklch(oklchString);
-		return generatePalette(oklchColor);
-	} catch {
-		return [];
+	const oklchColor = parse(oklchString);
+	if (!oklchColor || oklchColor.mode !== "oklch") {
+		throw new Error("Invalid OKLCH color string");
 	}
+	return generatePalette(oklchColor as Oklch);
 }
 
 export function isValidHex(hex: string): boolean {
