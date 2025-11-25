@@ -65,7 +65,11 @@ export default function Home() {
 		setColor({ ...color(), input: value });
 
 		if (isValidHex(value)) {
-			setColor({ ...color(), input: value, palette: generatePaletteFromHex(value) });
+			setColor({
+				...color(),
+				input: value,
+				palette: generatePaletteFromHex(value),
+			});
 		}
 	};
 
