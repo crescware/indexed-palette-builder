@@ -69,6 +69,18 @@ const veryLight$ = pipe(
 	minValue(lightnessThresholds.veryLight$.literal),
 );
 
+// Hue range validation schemas
+const neutralBlueHue$ = pipe(
+	number(),
+	minValue(hueRanges.neutralBlueStart$.literal),
+	maxValue(hueRanges.neutralBlueEnd$.literal),
+);
+const warmNeutralHue$ = pipe(
+	number(),
+	minValue(hueRanges.warmNeutralStart$.literal),
+	maxValue(hueRanges.warmNeutralEnd$.literal),
+);
+
 // Hue validation schemas
 const red$ = pipe(
 	number(),
@@ -276,12 +288,9 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 			return lowSaturationPattern;
 		}
 
-		const isInNeutralRange =
-			(h >= hueRanges.neutralBlueStart$.literal &&
-				h <= hueRanges.neutralBlueEnd$.literal) ||
-			(h >= hueRanges.warmNeutralStart$.literal &&
-				h <= hueRanges.warmNeutralEnd$.literal &&
-				c < chromaThresholds.warmNeutral$.literal);
+		const isWarmNeutral =
+			is(warmNeutralHue$, h) && c < chromaThresholds.warmNeutral$.literal;
+		const isInNeutralRange = is(neutralBlueHue$, h) || isWarmNeutral;
 
 		if (is(veryLight$, l)) {
 			const isLowLightNeutral =
