@@ -20,7 +20,7 @@ const lightnessThresholds$ = {
 
 const hueBoundaries$ = {
 	redOrange: literal(38),
-	orangeYellow: literal(70.4),
+	orangeYellow: literal(71),
 	yellowGreen: literal(135),
 	greenCyan: literal(215),
 	cyanSky: literal(230),
@@ -223,8 +223,8 @@ const orangePattern: Record<number, ShadeValues> = {
 	100: { l: 0.954, c: 0.038 },
 	200: { l: 0.901, c: 0.076 },
 	300: { l: 0.837, c: 0.128 },
-	400: { l: 0.76, c: 0.183 },
-	500: { l: 0.737, c: 0.213 },
+	400: { l: 0.75, c: 0.183 },
+	500: { l: 0.769, c: 0.213 },
 	600: { l: 0.646, c: 0.222 },
 	700: { l: 0.553, c: 0.195 },
 	800: { l: 0.47, c: 0.157 },
