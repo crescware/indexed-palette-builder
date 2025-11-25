@@ -1,6 +1,80 @@
 import { formatHex, type Oklch } from "culori";
+import { literal, maxValue, minValue, number, pipe, safeParse } from "valibot";
 
 type ShadeValues = { l: number; c: number };
+
+// Constants for color classification
+// ----------------------------------------------------------------
+
+const chromaThresholds$ = {
+	definitelyGray: literal(0.005),
+	veryLow: literal(0.008),
+	lowLightNeutral: literal(0.01),
+	warmNeutral: literal(0.014),
+	low: literal(0.05),
+} as const;
+
+const lightnessThresholds$ = {
+	veryLight: literal(0.96),
+} as const;
+
+const hueBoundaries$ = {
+	redOrange: literal(38),
+	orangeYellow: literal(71),
+	yellowGreen: literal(135),
+	greenCyan: literal(215),
+	cyanSky: literal(230),
+	skyBlue: literal(250),
+	bluePink: literal(320),
+} as const;
+
+const hueRanges$ = {
+	warmNeutralStart: literal(30),
+	warmNeutralEnd: literal(120),
+	neutralBlueStart: literal(180),
+} as const;
+
+// Validation schemas
+const _chroma$ = pipe(number(), minValue(0), maxValue(1));
+const _lightness$ = pipe(number(), minValue(0), maxValue(1));
+const _hue$ = pipe(number(), minValue(0), maxValue(360));
+
+const _red$ = pipe(
+	number(),
+	minValue(0),
+	maxValue(hueBoundaries$.redOrange.literal),
+);
+const orange$ = pipe(
+	number(),
+	minValue(hueBoundaries$.redOrange.literal),
+	maxValue(hueBoundaries$.orangeYellow.literal),
+);
+const yellow$ = pipe(
+	number(),
+	minValue(hueBoundaries$.orangeYellow.literal),
+	maxValue(hueBoundaries$.yellowGreen.literal),
+);
+const green$ = pipe(
+	number(),
+	minValue(hueBoundaries$.yellowGreen.literal),
+	maxValue(hueBoundaries$.greenCyan.literal),
+);
+const cyan$ = pipe(
+	number(),
+	minValue(hueBoundaries$.greenCyan.literal),
+	maxValue(hueBoundaries$.cyanSky.literal),
+);
+const sky$ = pipe(
+	number(),
+	minValue(hueBoundaries$.cyanSky.literal),
+	maxValue(hueBoundaries$.skyBlue.literal),
+);
+const blue$ = pipe(
+	number(),
+	minValue(hueBoundaries$.skyBlue.literal),
+	maxValue(hueBoundaries$.bluePink.literal),
+);
+const pink$ = pipe(number(), minValue(hueBoundaries$.bluePink.literal));
 
 // 1. Pattern definitions (including 0 and 1000)
 // ----------------------------------------------------------------
@@ -166,24 +240,32 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 	const h = oklch.h ?? 0;
 	const l = oklch.l ?? 0;
 
-	// Grays: chroma less than 0.05
+	// Grays: chroma less than chromaLow
 	// But also check that we're not in a strongly colored hue range
 	// True grays will have hue anywhere, but we want to catch slate/gray/zinc colors
-	if (c < 0.05) {
-		// If chroma is very low (< 0.005), definitely a gray
-		if (c < 0.005) {
+	if (c < chromaThresholds$.low.literal) {
+		// If chroma is very low, definitely a gray
+		if (c < chromaThresholds$.definitelyGray.literal) {
 			return lowSaturationPattern;
 		}
-		// For moderate low chroma (0.005-0.05), check context:
-		// - Very light colors (L > 0.96) with low C are likely shade 50 of chromatic colors
+		// For moderate low chroma, check context:
+		// - Very light colors with low C are likely shade 50 of chromatic colors
 		// - Darker colors with low C in neutral hue range are likely grays
-		// Neutral hue range is primarily blue-ish (180-320), and warm neutrals (stone) at very low C
-		const isInNeutralRange = (h >= 180 && h <= 320) || (h >= 30 && h <= 120 && c < 0.014);
+		// Neutral hue range is primarily blue-ish, and warm neutrals (stone) at very low C
+		const isInNeutralRange =
+			(h >= hueRanges$.neutralBlueStart.literal &&
+				h <= hueBoundaries$.bluePink.literal) ||
+			(h >= hueRanges$.warmNeutralStart.literal &&
+				h <= hueRanges$.warmNeutralEnd.literal &&
+				c < chromaThresholds$.warmNeutral.literal);
 
-		if (l > 0.96) {
+		if (l > lightnessThresholds$.veryLight.literal) {
 			// Light shades - only treat as gray if chroma is extremely low
 			// For neutral hue range, use stricter threshold to avoid catching light blue/indigo/violet
-			if (c < 0.008 || (isInNeutralRange && c < 0.010)) {
+			if (
+				c < chromaThresholds$.veryLow.literal ||
+				(isInNeutralRange && c < chromaThresholds$.lowLightNeutral.literal)
+			) {
 				return lowSaturationPattern;
 			}
 		} else {
@@ -194,42 +276,42 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 		}
 	}
 
-	// Orange (warm orange): 38-71 degrees
-	if (h >= 38 && h < 71) {
+	// Orange (warm orange)
+	if (safeParse(orange$, h).success) {
 		return orangePattern;
 	}
 
-	// Yellow/Lime/Amber (bright yellows): 71-135 degrees
-	if (h >= 71 && h < 135) {
+	// Yellow/Lime/Amber (bright yellows)
+	if (safeParse(yellow$, h).success) {
 		return yellowPattern;
 	}
 
-	// Green/Teal: 135-215 degrees
-	if (h >= 135 && h < 215) {
+	// Green/Teal
+	if (safeParse(green$, h).success) {
 		return greenTealPattern;
 	}
 
-	// Cyan: 215-230 degrees
-	if (h >= 215 && h < 230) {
+	// Cyan
+	if (safeParse(cyan$, h).success) {
 		return cyanPattern;
 	}
 
-	// Sky: 230-250 degrees
-	if (h >= 230 && h < 250) {
+	// Sky
+	if (safeParse(sky$, h).success) {
 		return skyPattern;
 	}
 
-	// Blue/Indigo/Violet/Purple: 250-320 degrees
-	if (h >= 250 && h < 320) {
+	// Blue/Indigo/Violet/Purple
+	if (safeParse(blue$, h).success) {
 		return coolBluePattern;
 	}
 
-	// Pink/Fuchsia (pink side): 320-360 degrees
-	if (h >= 320) {
+	// Pink/Fuchsia (pink side)
+	if (safeParse(pink$, h).success) {
 		return lightBrightPattern;
 	}
 
-	// Red/Rose (warm reds): 0-38 degrees
+	// Red/Rose (warm reds)
 	return warmRedPattern;
 }
 
