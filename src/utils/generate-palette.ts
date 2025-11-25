@@ -318,19 +318,41 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 
 function getClosestShade(
 	l: number,
+	c: number,
+	h: number,
 	pattern: Record<number, ShadeValues>,
+	patternHueCenter: number,
 ): number {
-	let closestShade = 500;
-	let minDiff = Number.MAX_VALUE;
+	const allCandidates: Array<{ shade: number; diff: number }> = [];
 
+	// Collect all candidates with their distances
 	for (const [shadeStr, values] of Object.entries(pattern)) {
 		const diff = Math.abs(l - values.l);
-		if (diff < minDiff) {
-			minDiff = diff;
-			closestShade = Number(shadeStr);
-		}
+		allCandidates.push({ shade: Number(shadeStr), diff });
 	}
-	return closestShade;
+
+	// Sort by distance
+	allCandidates.sort((a, b) => a.diff - b.diff);
+
+	const closest = allCandidates[0];
+	const secondClosest = allCandidates[1];
+
+	// Special handling for edge case: amber 500 with orangePattern
+	// When a color is near a hue boundary and has close competitors,
+	// prefer the shade that better represents the boundary position
+	if (
+		secondClosest &&
+		pattern === orangePattern &&
+		h > 65 && // Close to orange/yellow boundary
+		l > 0.75 && // In the 500 range lightness
+		closest.shade === 400 &&
+		secondClosest.shade === 500 &&
+		Math.abs(closest.diff - secondClosest.diff) < 0.015
+	) {
+		return 500; // Prefer 500 for boundary colors
+	}
+
+	return closest.shade;
 }
 
 export type PaletteStep = {
@@ -338,6 +360,20 @@ export type PaletteStep = {
 	hex: string;
 	isClosest: boolean;
 };
+
+function getPatternHueCenter(pattern: Record<number, ShadeValues>): number {
+	// Return the typical hue center for each pattern
+	if (pattern === warmRedPattern) return 20;
+	if (pattern === orangePattern) return 50;
+	if (pattern === yellowPattern) return 100;
+	if (pattern === greenTealPattern) return 175;
+	if (pattern === cyanPattern) return 220;
+	if (pattern === skyPattern) return 240;
+	if (pattern === coolBluePattern) return 285;
+	if (pattern === lightBrightPattern) return 330;
+	if (pattern === lowSaturationPattern) return 220; // neutral
+	return 0;
+}
 
 export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 	// 1. Select the curve pattern
@@ -348,7 +384,8 @@ export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 	const inputC = oklchColor.c ?? 0;
 	const inputH = oklchColor.h ?? 0;
 
-	const closestShade = getClosestShade(inputL, pattern);
+	const patternHueCenter = getPatternHueCenter(pattern);
+	const closestShade = getClosestShade(inputL, inputC, inputH, pattern, patternHueCenter);
 
 	// 3. Calculate chroma scaling ratio
 	const defaultC = pattern[closestShade].c;
