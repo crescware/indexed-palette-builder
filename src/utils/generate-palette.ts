@@ -361,18 +361,21 @@ export type PaletteStep = {
 	isClosest: boolean;
 };
 
+// Map of pattern to its typical hue center
+const patternHueCenters = new Map<Record<number, ShadeValues>, number>([
+	[warmRedPattern, 20],
+	[orangePattern, 50],
+	[yellowPattern, 100],
+	[greenTealPattern, 175],
+	[cyanPattern, 220],
+	[skyPattern, 240],
+	[coolBluePattern, 285],
+	[lightBrightPattern, 330],
+	[lowSaturationPattern, 220], // neutral
+]);
+
 function getPatternHueCenter(pattern: Record<number, ShadeValues>): number {
-	// Return the typical hue center for each pattern
-	if (pattern === warmRedPattern) return 20;
-	if (pattern === orangePattern) return 50;
-	if (pattern === yellowPattern) return 100;
-	if (pattern === greenTealPattern) return 175;
-	if (pattern === cyanPattern) return 220;
-	if (pattern === skyPattern) return 240;
-	if (pattern === coolBluePattern) return 285;
-	if (pattern === lightBrightPattern) return 330;
-	if (pattern === lowSaturationPattern) return 220; // neutral
-	return 0;
+	return patternHueCenters.get(pattern) ?? 0;
 }
 
 export function generatePalette(oklchColor: Oklch): PaletteStep[] {
