@@ -1,5 +1,14 @@
 import { formatHex, type Oklch } from "culori";
-import { literal, maxValue, minValue, number, pipe, safeParse } from "valibot";
+import {
+	type BaseIssue,
+	type BaseSchema,
+	literal,
+	maxValue,
+	minValue,
+	number,
+	pipe,
+	safeParse,
+} from "valibot";
 
 type ShadeValues = { l: number; c: number };
 
@@ -35,7 +44,20 @@ const hueRanges = {
 	neutralBlueEnd$: literal(295),
 } as const;
 
+// Validation helper
+function is<T>(
+	schema: BaseSchema<unknown, T, BaseIssue<unknown>>,
+	value: unknown,
+): boolean {
+	return safeParse(schema, value).success;
+}
+
 // Validation schemas
+const red$ = pipe(
+	number(),
+	minValue(0),
+	maxValue(hueBoundaries.redOrange$.literal),
+);
 const orange$ = pipe(
 	number(),
 	minValue(hueBoundaries.redOrange$.literal),
@@ -72,7 +94,7 @@ const pink$ = pipe(number(), minValue(hueBoundaries.bluePink$.literal));
 // ----------------------------------------------------------------
 
 // Red, Orange, Rose (warm reds and oranges)
-const warmRedPattern: Record<number, ShadeValues> = {
+const redPattern: Record<number, ShadeValues> = {
 	0: { l: 1, c: 0 },
 	50: { l: 0.971, c: 0.013 },
 	100: { l: 0.936, c: 0.032 },
@@ -89,7 +111,7 @@ const warmRedPattern: Record<number, ShadeValues> = {
 };
 
 // Blue, Indigo, Violet, Purple (cool purples and blues)
-const coolBluePattern: Record<number, ShadeValues> = {
+const bluePattern: Record<number, ShadeValues> = {
 	0: { l: 1, c: 0 },
 	50: { l: 0.967, c: 0.016 },
 	100: { l: 0.935, c: 0.032 },
@@ -106,7 +128,7 @@ const coolBluePattern: Record<number, ShadeValues> = {
 };
 
 // Green, Emerald, Teal (greens and teals)
-const greenTealPattern: Record<number, ShadeValues> = {
+const greenPattern: Record<number, ShadeValues> = {
 	0: { l: 1, c: 0 },
 	50: { l: 0.984, c: 0.014 },
 	100: { l: 0.953, c: 0.051 },
@@ -157,7 +179,7 @@ const skyPattern: Record<number, ShadeValues> = {
 };
 
 // Pink, Fuchsia (bright pinks and magentas)
-const lightBrightPattern: Record<number, ShadeValues> = {
+const pinkPattern: Record<number, ShadeValues> = {
 	0: { l: 1, c: 0 },
 	50: { l: 0.974, c: 0.016 },
 	100: { l: 0.95, c: 0.033 },
@@ -268,43 +290,39 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 		}
 	}
 
-	// Orange (warm orange)
-	if (safeParse(orange$, h).success) {
+	if (is(orange$, h)) {
 		return orangePattern;
 	}
 
-	// Yellow/Lime/Amber (bright yellows)
-	if (safeParse(yellow$, h).success) {
+	if (is(yellow$, h)) {
 		return yellowPattern;
 	}
 
-	// Green/Teal
-	if (safeParse(green$, h).success) {
-		return greenTealPattern;
+	if (is(green$, h)) {
+		return greenPattern;
 	}
 
-	// Cyan
-	if (safeParse(cyan$, h).success) {
+	if (is(cyan$, h)) {
 		return cyanPattern;
 	}
 
-	// Sky
-	if (safeParse(sky$, h).success) {
+	if (is(sky$, h)) {
 		return skyPattern;
 	}
 
-	// Blue/Indigo/Violet/Purple
-	if (safeParse(blue$, h).success) {
-		return coolBluePattern;
+	if (is(blue$, h)) {
+		return bluePattern;
 	}
 
-	// Pink/Fuchsia (pink side)
-	if (safeParse(pink$, h).success) {
-		return lightBrightPattern;
+	if (is(pink$, h)) {
+		return pinkPattern;
 	}
 
-	// Red/Rose (warm reds)
-	return warmRedPattern;
+	if (is(red$, h)) {
+		return redPattern;
+	}
+
+	throw new Error("never reached");
 }
 
 function calcClosest(
