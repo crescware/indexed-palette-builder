@@ -25,8 +25,8 @@ const warmRedPattern: Record<number, ShadeValues> = {
 // Blue, Indigo, Violet, Purple (cool purples and blues)
 const coolBluePattern: Record<number, ShadeValues> = {
 	0: { l: 1, c: 0 },
-	50: { l: 0.966, c: 0.016 },
-	100: { l: 0.931, c: 0.033 },
+	50: { l: 0.967, c: 0.016 },
+	100: { l: 0.935, c: 0.032 },
 	200: { l: 0.876, c: 0.062 },
 	300: { l: 0.797, c: 0.11 },
 	400: { l: 0.69, c: 0.174 },
@@ -177,11 +177,13 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 		// For moderate low chroma (0.005-0.05), check context:
 		// - Very light colors (L > 0.96) with low C are likely shade 50 of chromatic colors
 		// - Darker colors with low C in neutral hue range are likely grays
-		const isInNeutralRange = (h >= 180 && h <= 320) || (h >= 0 && h <= 120 && c < 0.015);
+		// Neutral hue range is primarily blue-ish (180-320), and warm neutrals (stone) at very low C
+		const isInNeutralRange = (h >= 180 && h <= 320) || (h >= 30 && h <= 120 && c < 0.014);
 
 		if (l > 0.96) {
-			// Light shades - only treat as gray if chroma is extremely low or in neutral hue range with low C
-			if (c < 0.008 || (isInNeutralRange && c < 0.020)) {
+			// Light shades - only treat as gray if chroma is extremely low
+			// For neutral hue range, use stricter threshold to avoid catching light blue/indigo/violet
+			if (c < 0.008 || (isInNeutralRange && c < 0.010)) {
 				return lowSaturationPattern;
 			}
 		} else {
@@ -192,13 +194,13 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 		}
 	}
 
-	// Orange (warm orange): 50-70 degrees
-	if (h >= 50 && h < 70) {
+	// Orange (warm orange): 38-71 degrees
+	if (h >= 38 && h < 71) {
 		return orangePattern;
 	}
 
-	// Yellow/Lime/Amber (bright yellows): 70-135 degrees
-	if (h >= 70 && h < 135) {
+	// Yellow/Lime/Amber (bright yellows): 71-135 degrees
+	if (h >= 71 && h < 135) {
 		return yellowPattern;
 	}
 
@@ -207,13 +209,13 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 		return greenTealPattern;
 	}
 
-	// Cyan: 215-235 degrees
-	if (h >= 215 && h < 235) {
+	// Cyan: 215-230 degrees
+	if (h >= 215 && h < 230) {
 		return cyanPattern;
 	}
 
-	// Sky: 235-250 degrees
-	if (h >= 235 && h < 250) {
+	// Sky: 230-250 degrees
+	if (h >= 230 && h < 250) {
 		return skyPattern;
 	}
 
@@ -227,7 +229,7 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 		return lightBrightPattern;
 	}
 
-	// Red/Rose (warm reds): 0-50 degrees
+	// Red/Rose (warm reds): 0-38 degrees
 	return warmRedPattern;
 }
 
