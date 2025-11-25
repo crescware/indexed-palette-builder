@@ -284,10 +284,9 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 				c < chromaThresholds.warmNeutral$.literal);
 
 		if (is(veryLight$, l)) {
-			if (
-				is(veryLowChroma$, c) ||
-				(isInNeutralRange && c < chromaThresholds.lowLightNeutral$.literal)
-			) {
+			const isLowLightNeutral =
+				isInNeutralRange && c < chromaThresholds.lowLightNeutral$.literal;
+			if (is(veryLowChroma$, c) || isLowLightNeutral) {
 				return lowSaturationPattern;
 			}
 		} else {
