@@ -1,5 +1,7 @@
 import { converter, formatHex, type Oklch } from "culori";
 
+import { parseAsOklch } from "./parse-as-oklch";
+
 const toOklch = converter("oklch");
 
 type ShadeValues = { l: number; c: number };
@@ -104,17 +106,14 @@ export type PaletteStep = {
 	isClosest: boolean;
 };
 
-export function generatePalette(hexInput: string): PaletteStep[] {
-	const originalColor = toOklch(hexInput);
-	if (!originalColor) return [];
-
+export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 	// 1. Select the curve pattern
-	const pattern = selectPattern(originalColor);
+	const pattern = selectPattern(oklchColor);
 
 	// 2. Determine where the input color sits on the curve
-	const inputL = originalColor.l ?? 0;
-	const inputC = originalColor.c ?? 0;
-	const inputH = originalColor.h ?? 0;
+	const inputL = oklchColor.l ?? 0;
+	const inputC = oklchColor.c ?? 0;
+	const inputH = oklchColor.h ?? 0;
 
 	const closestShade = getClosestShade(inputL, pattern);
 
@@ -150,6 +149,24 @@ export function generatePalette(hexInput: string): PaletteStep[] {
 			};
 		})
 		.sort((a, b) => a.shade - b.shade);
+}
+
+export function generatePaletteFromHex(hexInput: string): PaletteStep[] {
+	const oklchColor = toOklch(hexInput);
+	if (!oklchColor) return [];
+
+	return generatePalette(oklchColor);
+}
+
+export function generatePaletteFromOklchString(
+	oklchString: string,
+): PaletteStep[] {
+	try {
+		const oklchColor = parseAsOklch(oklchString);
+		return generatePalette(oklchColor);
+	} catch {
+		return [];
+	}
 }
 
 export function isValidHex(hex: string): boolean {

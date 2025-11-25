@@ -3,13 +3,13 @@ import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { isServer } from "solid-js/web";
 
 import { SettingsPopup } from "../components/settings-popup";
-import { generatePalette, isValidHex } from "../utils/color-utils";
+import { generatePaletteFromHex, isValidHex } from "../utils/color-utils";
 
 export default function Home() {
 	const [color, setColor] = createSignal({
 		name: "primary",
 		input: "#3b82f6", // Default to blue-500
-		palette: generatePalette("#3b82f6"),
+		palette: generatePaletteFromHex("#3b82f6"),
 	});
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
@@ -65,7 +65,7 @@ export default function Home() {
 		setColor({ ...color(), input: value });
 
 		if (isValidHex(value)) {
-			setColor({ ...color(), palette: generatePalette(value) });
+			setColor({ ...color(), input: value, palette: generatePaletteFromHex(value) });
 		}
 	};
 
