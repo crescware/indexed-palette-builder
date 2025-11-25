@@ -52,7 +52,24 @@ function is<T>(
 	return safeParse(schema, value).success;
 }
 
-// Validation schemas
+// Chroma validation schemas
+const definitelyGray$ = pipe(
+	number(),
+	maxValue(chromaThresholds.definitelyGray$.literal),
+);
+const veryLowChroma$ = pipe(
+	number(),
+	maxValue(chromaThresholds.veryLow$.literal),
+);
+const lowChroma$ = pipe(number(), maxValue(chromaThresholds.low$.literal));
+
+// Lightness validation schemas
+const veryLight$ = pipe(
+	number(),
+	minValue(lightnessThresholds.veryLight$.literal),
+);
+
+// Hue validation schemas
 const red$ = pipe(
 	number(),
 	minValue(0),
@@ -254,18 +271,11 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 	const h = oklch.h ?? 0;
 	const l = oklch.l ?? 0;
 
-	// Grays: chroma less than chromaLow
-	// But also check that we're not in a strongly colored hue range
-	// True grays will have hue anywhere, but we want to catch slate/gray/zinc colors
-	if (c < chromaThresholds.low$.literal) {
-		// If chroma is very low, definitely a gray
-		if (c < chromaThresholds.definitelyGray$.literal) {
+	if (is(lowChroma$, c)) {
+		if (is(definitelyGray$, c)) {
 			return lowSaturationPattern;
 		}
-		// For moderate low chroma, check context:
-		// - Very light colors with low C are likely shade 50 of chromatic colors
-		// - Darker colors with low C in neutral hue range are likely grays
-		// Neutral hue range is primarily blue-ish, and warm neutrals (stone) at very low C
+
 		const isInNeutralRange =
 			(h >= hueRanges.neutralBlueStart$.literal &&
 				h <= hueRanges.neutralBlueEnd$.literal) ||
@@ -273,17 +283,14 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 				h <= hueRanges.warmNeutralEnd$.literal &&
 				c < chromaThresholds.warmNeutral$.literal);
 
-		if (l > lightnessThresholds.veryLight$.literal) {
-			// Light shades - only treat as gray if chroma is extremely low
-			// For neutral hue range, use stricter threshold to avoid catching light blue/indigo/violet
+		if (is(veryLight$, l)) {
 			if (
-				c < chromaThresholds.veryLow$.literal ||
+				is(veryLowChroma$, c) ||
 				(isInNeutralRange && c < chromaThresholds.lowLightNeutral$.literal)
 			) {
 				return lowSaturationPattern;
 			}
 		} else {
-			// Darker shades - treat as gray if in neutral hue range
 			if (isInNeutralRange) {
 				return lowSaturationPattern;
 			}
