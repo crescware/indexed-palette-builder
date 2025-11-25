@@ -6,67 +6,67 @@ type ShadeValues = { l: number; c: number };
 // Constants for color classification
 // ----------------------------------------------------------------
 
-const chromaThresholds$ = {
-	definitelyGray: literal(0.005),
-	veryLow: literal(0.008),
-	lowLightNeutral: literal(0.014),
-	warmNeutral: literal(0.014),
-	low: literal(0.05),
+const chromaThresholds = {
+	definitelyGray$: literal(0.005),
+	veryLow$: literal(0.008),
+	lowLightNeutral$: literal(0.014),
+	warmNeutral$: literal(0.014),
+	low$: literal(0.05),
 } as const;
 
-const lightnessThresholds$ = {
-	veryLight: literal(0.92),
+const lightnessThresholds = {
+	veryLight$: literal(0.92),
 } as const;
 
-const hueBoundaries$ = {
-	redOrange: literal(38),
-	orangeYellow: literal(71),
-	yellowGreen: literal(135),
-	greenCyan: literal(215),
-	cyanSky: literal(230),
-	skyBlue: literal(250),
-	bluePink: literal(318),
+const hueBoundaries = {
+	redOrange$: literal(38),
+	orangeYellow$: literal(71),
+	yellowGreen$: literal(135),
+	greenCyan$: literal(215),
+	cyanSky$: literal(230),
+	skyBlue$: literal(250),
+	bluePink$: literal(318),
 } as const;
 
-const hueRanges$ = {
-	warmNeutralStart: literal(30),
-	warmNeutralEnd: literal(120),
-	neutralBlueStart: literal(215),
-	neutralBlueEnd: literal(295),
+const hueRanges = {
+	warmNeutralStart$: literal(30),
+	warmNeutralEnd$: literal(120),
+	neutralBlueStart$: literal(215),
+	neutralBlueEnd$: literal(295),
 } as const;
 
 // Validation schemas
 const orange$ = pipe(
 	number(),
-	minValue(hueBoundaries$.redOrange.literal),
-	maxValue(hueBoundaries$.orangeYellow.literal),
+	minValue(hueBoundaries.redOrange$.literal),
+	maxValue(hueBoundaries.orangeYellow$.literal),
 );
 const yellow$ = pipe(
 	number(),
-	minValue(hueBoundaries$.orangeYellow.literal),
-	maxValue(hueBoundaries$.yellowGreen.literal),
+	minValue(hueBoundaries.orangeYellow$.literal),
+	maxValue(hueBoundaries.yellowGreen$.literal),
 );
 const green$ = pipe(
 	number(),
-	minValue(hueBoundaries$.yellowGreen.literal),
-	maxValue(hueBoundaries$.greenCyan.literal),
+	minValue(hueBoundaries.yellowGreen$.literal),
+	maxValue(hueBoundaries.greenCyan$.literal),
 );
 const cyan$ = pipe(
 	number(),
-	minValue(hueBoundaries$.greenCyan.literal),
-	maxValue(hueBoundaries$.cyanSky.literal),
+	minValue(hueBoundaries.greenCyan$.literal),
+	maxValue(hueBoundaries.cyanSky$.literal),
 );
 const sky$ = pipe(
 	number(),
-	minValue(hueBoundaries$.cyanSky.literal),
-	maxValue(hueBoundaries$.skyBlue.literal),
+	minValue(hueBoundaries.cyanSky$.literal),
+	maxValue(hueBoundaries.skyBlue$.literal),
 );
 const blue$ = pipe(
 	number(),
-	minValue(hueBoundaries$.skyBlue.literal),
-	maxValue(hueBoundaries$.bluePink.literal),
+	minValue(hueBoundaries.skyBlue$.literal),
+	maxValue(hueBoundaries.bluePink$.literal),
 );
-const pink$ = pipe(number(), minValue(hueBoundaries$.bluePink.literal));
+const pink$ = pipe(number(), minValue(hueBoundaries.bluePink$.literal));
 
 // 1. Pattern definitions (including 0 and 1000)
 // ----------------------------------------------------------------
@@ -235,9 +235,9 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 	// Grays: chroma less than chromaLow
 	// But also check that we're not in a strongly colored hue range
 	// True grays will have hue anywhere, but we want to catch slate/gray/zinc colors
-	if (c < chromaThresholds$.low.literal) {
+	if (c < chromaThresholds.low$.literal) {
 		// If chroma is very low, definitely a gray
-		if (c < chromaThresholds$.definitelyGray.literal) {
+		if (c < chromaThresholds.definitelyGray$.literal) {
 			return lowSaturationPattern;
 		}
 		// For moderate low chroma, check context:
@@ -245,18 +245,18 @@ function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 		// - Darker colors with low C in neutral hue range are likely grays
 		// Neutral hue range is primarily blue-ish, and warm neutrals (stone) at very low C
 		const isInNeutralRange =
-			(h >= hueRanges$.neutralBlueStart.literal &&
-				h <= hueRanges$.neutralBlueEnd.literal) ||
-			(h >= hueRanges$.warmNeutralStart.literal &&
-				h <= hueRanges$.warmNeutralEnd.literal &&
-				c < chromaThresholds$.warmNeutral.literal);
+			(h >= hueRanges.neutralBlueStart$.literal &&
+				h <= hueRanges.neutralBlueEnd$.literal) ||
+			(h >= hueRanges.warmNeutralStart$.literal &&
+				h <= hueRanges.warmNeutralEnd$.literal &&
+				c < chromaThresholds.warmNeutral$.literal);
 
-		if (l > lightnessThresholds$.veryLight.literal) {
+		if (l > lightnessThresholds.veryLight$.literal) {
 			// Light shades - only treat as gray if chroma is extremely low
 			// For neutral hue range, use stricter threshold to avoid catching light blue/indigo/violet
 			if (
-				c < chromaThresholds$.veryLow.literal ||
-				(isInNeutralRange && c < chromaThresholds$.lowLightNeutral.literal)
+				c < chromaThresholds.veryLow$.literal ||
+				(isInNeutralRange && c < chromaThresholds.lowLightNeutral$.literal)
 			) {
 				return lowSaturationPattern;
 			}
