@@ -275,33 +275,34 @@ const orangePattern: Record<number, ShadeValues> = {
 	1000: { l: 0, c: 0 },
 };
 
-// 2. Logic functions
-// ----------------------------------------------------------------
-
 function selectPattern(oklch: Oklch): Record<number, ShadeValues> {
 	const c = oklch.c ?? 0;
 	const h = oklch.h ?? 0;
 	const l = oklch.l ?? 0;
 
 	if (is(lowChroma$, c)) {
+		const isWarmNeutral =
+			is(warmNeutralHue$, h) && c < chromaThresholds.warmNeutral$.literal;
+
+		const isInNeutralRange = is(neutralBlueHue$, h) || isWarmNeutral;
+
+		const isLowLightNeutral =
+			isInNeutralRange && c < chromaThresholds.lowLightNeutral$.literal;
+
 		if (is(definitelyGray$, c)) {
 			return lowSaturationPattern;
 		}
 
-		const isWarmNeutral =
-			is(warmNeutralHue$, h) && c < chromaThresholds.warmNeutral$.literal;
-		const isInNeutralRange = is(neutralBlueHue$, h) || isWarmNeutral;
+		if (is(veryLight$, l) && is(veryLowChroma$, c)) {
+			return lowSaturationPattern;
+		}
 
-		if (is(veryLight$, l)) {
-			const isLowLightNeutral =
-				isInNeutralRange && c < chromaThresholds.lowLightNeutral$.literal;
-			if (is(veryLowChroma$, c) || isLowLightNeutral) {
-				return lowSaturationPattern;
-			}
-		} else {
-			if (isInNeutralRange) {
-				return lowSaturationPattern;
-			}
+		if (is(veryLight$, l) && isLowLightNeutral) {
+			return lowSaturationPattern;
+		}
+
+		if (!is(veryLight$, l) && isInNeutralRange) {
+			return lowSaturationPattern;
 		}
 	}
 
