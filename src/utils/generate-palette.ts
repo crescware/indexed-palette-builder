@@ -9,7 +9,7 @@ type ShadeValues = { l: number; c: number };
 const chromaThresholds$ = {
 	definitelyGray: literal(0.005),
 	veryLow: literal(0.008),
-	lowLightNeutral: literal(0.015),
+	lowLightNeutral: literal(0.014),
 	warmNeutral: literal(0.014),
 	low: literal(0.05),
 } as const;
