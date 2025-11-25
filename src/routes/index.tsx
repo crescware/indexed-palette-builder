@@ -3,7 +3,8 @@ import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { isServer } from "solid-js/web";
 
 import { SettingsPopup } from "../components/settings-popup";
-import { generatePaletteFromHex, isValidHex } from "../utils/color-utils";
+import { generatePaletteFromHex } from "../utils/generate-palette-from-hex";
+import { isValidHex } from "../utils/is-valid-hex";
 
 export default function Home() {
 	const [color, setColor] = createSignal({

@@ -1,6 +1,4 @@
-import { converter, formatHex, parse, type Oklch } from "culori";
-
-const toOklch = converter("oklch");
+import { formatHex, type Oklch } from "culori";
 
 type ShadeValues = { l: number; c: number };
 
@@ -147,26 +145,4 @@ export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 			};
 		})
 		.sort((a, b) => a.shade - b.shade);
-}
-
-export function generatePaletteFromHex(hexInput: string): PaletteStep[] {
-	const oklchColor = toOklch(hexInput);
-	if (!oklchColor) {
-		throw new Error("Invalid hex color");
-	}
-	return generatePalette(oklchColor);
-}
-
-export function generatePaletteFromOklchString(
-	oklchString: string,
-): PaletteStep[] {
-	const oklchColor = parse(oklchString);
-	if (!oklchColor || oklchColor.mode !== "oklch") {
-		throw new Error("Invalid OKLCH color string");
-	}
-	return generatePalette(oklchColor as Oklch);
-}
-
-export function isValidHex(hex: string): boolean {
-	return /^#([0-9A-F]{3}){1,2}$/i.test(hex);
 }
