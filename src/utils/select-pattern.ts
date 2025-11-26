@@ -10,7 +10,7 @@ import {
 	safeParse,
 } from "valibot";
 
-type ShadeValues = {
+export type ShadeDefinition = {
 	l: number;
 	c: number;
 };
@@ -30,7 +30,7 @@ export type Shade =
 	| 950
 	| 1000;
 
-export type Pattern = Record<Shade, ShadeValues>;
+export type Pattern = Record<Shade, ShadeDefinition>;
 
 const chromaThresholds = {
 	definitelyGray$: literal(0.005),
@@ -286,32 +286,30 @@ export const orangePattern = {
 } as const satisfies Pattern;
 
 export function selectPattern(oklch: Oklch): Pattern {
-	const c = oklch.c ?? 0;
 	const h = oklch.h ?? 0;
-	const l = oklch.l ?? 0;
 
-	if (is(lowChroma$, c)) {
+	if (is(lowChroma$, oklch.c)) {
 		const isWarmNeutral =
-			is(warmNeutralHue$, h) && c < chromaThresholds.warmNeutral$.literal;
+			is(warmNeutralHue$, h) && oklch.c < chromaThresholds.warmNeutral$.literal;
 
 		const isInNeutralRange = is(neutralBlueHue$, h) || isWarmNeutral;
 
 		const isLowLightNeutral =
-			isInNeutralRange && c < chromaThresholds.lowLightNeutral$.literal;
+			isInNeutralRange && oklch.c < chromaThresholds.lowLightNeutral$.literal;
 
-		if (is(definitelyGray$, c)) {
+		if (is(definitelyGray$, oklch.c)) {
 			return lowSaturationPattern;
 		}
 
-		if (is(veryLight$, l) && is(veryLowChroma$, c)) {
+		if (is(veryLight$, oklch.l) && is(veryLowChroma$, oklch.c)) {
 			return lowSaturationPattern;
 		}
 
-		if (is(veryLight$, l) && isLowLightNeutral) {
+		if (is(veryLight$, oklch.l) && isLowLightNeutral) {
 			return lowSaturationPattern;
 		}
 
-		if (!is(veryLight$, l) && isInNeutralRange) {
+		if (!is(veryLight$, oklch.l) && isInNeutralRange) {
 			return lowSaturationPattern;
 		}
 	}

@@ -4,6 +4,7 @@ import {
 	orangePattern,
 	type Pattern,
 	type Shade,
+	type ShadeDefinition,
 	selectPattern,
 } from "./select-pattern";
 
@@ -76,31 +77,17 @@ const correctionThresholds = {
 function calcColor(
 	shade: Shade,
 	closestShade: Shade,
-	oklchColor: Oklch,
-	valuesC: number,
-	valuesL: number,
+	oklch: Oklch,
+	shadeDef: ShadeDefinition,
 	chromaScale: number,
-	maxStepsAbove: number,
-	maxStepsBelow: number,
-	shadesAbove: Shade[],
-	shadesBelow: Shade[],
+	shadesAround: ReturnType<typeof calcShadesAroundClosest>,
 ): Oklch {
-	const inputL = oklchColor.l;
-	const inputC = oklchColor.c;
-	const inputH = oklchColor.h ?? 0;
-
 	if (shade === closestShade) {
-		// Use exact input color for closest shade
-		return {
-			mode: "oklch" as const,
-			l: inputL,
-			c: inputC,
-			h: inputH,
-		};
+		return oklch;
 	}
 
 	// Calculate the scaled chroma (calculated)
-	const calculatedC = valuesC * chromaScale;
+	const calculatedC = shadeDef.c * chromaScale;
 
 	const targetC = (() => {
 		const blendRatio = (() => {
@@ -108,25 +95,25 @@ function calcColor(
 				// Edge shades: use 100% calculated
 				return 1.0;
 			}
-			if (shade > closestShade && maxStepsAbove > 0) {
+			if (shade > closestShade && shadesAround.above.length > 0) {
 				// Shades above closest: gradually transition from input to calculated
-				const stepsFromClosest = shadesAbove.indexOf(shade) + 1;
-				return stepsFromClosest / maxStepsAbove;
+				const stepsFromClosest = shadesAround.above.indexOf(shade) + 1;
+				return stepsFromClosest / shadesAround.above.length;
 			}
-			if (shade > closestShade && maxStepsAbove === 0) {
+			if (shade > closestShade && shadesAround.above.length === 0) {
 				return 1.0;
 			}
-			if (shade < closestShade && maxStepsBelow > 0) {
+			if (shade < closestShade && shadesAround.below.length > 0) {
 				// Shades below closest: gradually transition from input to calculated
-				const reversedBelow = [...shadesBelow].reverse();
+				const reversedBelow = [...shadesAround.below].reverse();
 				const stepsFromClosest = reversedBelow.indexOf(shade) + 1;
-				return stepsFromClosest / maxStepsBelow;
+				return stepsFromClosest / shadesAround.below.length;
 			}
 			return 1.0;
 		})();
 
 		// Blend between input chroma and calculated chroma
-		const blended = inputC * (1 - blendRatio) + calculatedC * blendRatio;
+		const blended = oklch.c * (1 - blendRatio) + calculatedC * blendRatio;
 
 		// Cap at ~0.37 to respect P3 gamut limits
 		return Math.min(blended, 0.37);
@@ -134,9 +121,22 @@ function calcColor(
 
 	return {
 		mode: "oklch" as const,
-		l: valuesL, // Pattern lightness
+		l: shadeDef.l,
 		c: targetC,
-		h: inputH, // Keep hue constant
+		h: oklch.h ?? 0,
+	};
+}
+
+function calcShadesAroundClosest(
+	shades: Shade[],
+	closestShade: Shade,
+): { above: Shade[]; below: Shade[] } {
+	const lowerBoundary = 50;
+	const upperBoundary = 950;
+
+	return {
+		above: shades.filter((s) => s > closestShade && s <= upperBoundary),
+		below: shades.filter((s) => s < closestShade && s >= lowerBoundary),
 	};
 }
 
@@ -166,51 +166,31 @@ function detectStrongCorrection(
 	return false;
 }
 
-export function generatePalette(oklchColor: Oklch): PaletteStep[] {
-	const pattern = selectPattern(oklchColor);
-	const closestShade = getClosestShade(oklchColor, pattern);
-	const isInputAmbiguous = detectStrongCorrection(
-		oklchColor,
-		pattern,
-		closestShade,
-	);
+export function generatePalette(oklch: Oklch): PaletteStep[] {
+	const pattern = selectPattern(oklch);
+	const closestShade = getClosestShade(oklch, pattern);
 	const defaultC = pattern[closestShade].c;
-	const chromaScale = 0.001 < defaultC ? oklchColor.c / defaultC : 1;
+	const chromaScale = 0.001 < defaultC ? oklch.c / defaultC : 1;
 
 	const shades = Object.keys(pattern)
-		.map(Number)
+		.map((v) => parseInt(v, 10))
 		.sort((a, b) => a - b) as Shade[];
 
-	const lowerBoundary = 50;
-	const upperBoundary = 950;
-
-	const shadesAbove = shades.filter(
-		(s) => s > closestShade && s <= upperBoundary,
-	);
-
-	const shadesBelow = shades.filter(
-		(s) => s < closestShade && s >= lowerBoundary,
-	);
-
-	const maxStepsAbove = shadesAbove.length;
-	const maxStepsBelow = shadesBelow.length;
+	const shadesAround = calcShadesAroundClosest(shades, closestShade);
+	const isInputAmbiguous = detectStrongCorrection(oklch, pattern, closestShade);
 
 	return Object.entries(pattern)
-		.map(([shadeStr, values]) => {
-			const shade = Number(shadeStr) as Shade;
+		.map(([shadeStr, shadeDef]) => {
+			const shade = parseInt(shadeStr, 10) as Shade;
 
 			const isClosest = shade === closestShade;
 			const newColor = calcColor(
 				shade,
 				closestShade,
-				oklchColor,
-				values.c,
-				values.l,
+				oklch,
+				shadeDef,
 				chromaScale,
-				maxStepsAbove,
-				maxStepsBelow,
-				shadesAbove,
-				shadesBelow,
+				shadesAround,
 			);
 
 			return {
