@@ -1,4 +1,5 @@
 import { formatHex, type Oklch } from "culori";
+import { literal } from "valibot";
 import {
 	orangePattern,
 	type Pattern,
@@ -61,7 +62,43 @@ export type PaletteStep = {
 	hex: string;
 	oklch: Oklch;
 	isClosest: boolean;
+	needsStrongCorrection: boolean;
 };
+
+// Thresholds for detecting "non-Tailwind-like" colors
+const correctionThresholds = {
+	lightnessAmbiguity$: literal(0.02), // When closest and second-closest are within this range
+	lightnessDistance$: literal(0.05), // When input is far from any standard shade
+} as const;
+
+function detectStrongCorrection(
+	pattern: Pattern,
+	inputL: number,
+	closestShade: Shade,
+): boolean {
+	// Only detect for mid-range shades (300-700)
+	if (closestShade < 300 || closestShade > 700) {
+		return false;
+	}
+
+	const { closest, secondClosest } = calcClosest(pattern, inputL);
+
+	// Check if input is far from any standard shade
+	if (closest.diff > correctionThresholds.lightnessDistance$.literal) {
+		return true;
+	}
+
+	// Check if input is ambiguously between two shades
+	if (
+		secondClosest !== null &&
+		Math.abs(closest.diff - secondClosest.diff) <
+			correctionThresholds.lightnessAmbiguity$.literal
+	) {
+		return true;
+	}
+
+	return false;
+}
 
 export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 	// Select the curve pattern
@@ -73,6 +110,9 @@ export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 	const inputH = oklchColor.h ?? 0;
 
 	const closestShade = getClosestShade(inputL, inputH, pattern);
+
+	// Detect if the input color needs strong correction
+	const isInputAmbiguous = detectStrongCorrection(pattern, inputL, closestShade);
 
 	// Calculate chroma scaling ratio
 	const defaultC = pattern[closestShade].c;
@@ -156,6 +196,7 @@ export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 				hex: formatHex(newColor),
 				oklch: newColor,
 				isClosest: shade === closestShade,
+				needsStrongCorrection: shade === closestShade && isInputAmbiguous,
 			};
 		})
 		.sort((a, b) => a.shade - b.shade);
