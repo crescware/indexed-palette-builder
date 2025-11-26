@@ -70,7 +70,9 @@ describe("generatePaletteFromOklchString", () => {
 	});
 
 	describe("palette should contain all expected shades", () => {
-		const expectedShades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+		const expectedShades = [
+			50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950,
+		];
 
 		for (const colorName of colorNames) {
 			const color = colors.find((c) => c.name === colorName);

@@ -212,8 +212,8 @@ export default function Home() {
 									Closest to edge shade {hiddenClosestEdgeShade()}
 								</Show>
 								<Show when={needsStrongCorrection()}>
-									This color does not look like Tailwind, so strong correction is
-									being applied
+									This color does not look like Tailwind, so strong correction
+									is being applied
 								</Show>
 							</div>
 						</div>
