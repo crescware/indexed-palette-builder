@@ -39,7 +39,9 @@ function hasCompetingMidShades(
 	);
 }
 
-function getClosestShade(l: number, h: number, pattern: Pattern): Shade {
+function getClosestShade(oklchColor: Oklch, pattern: Pattern): Shade {
+	const l = oklchColor.l;
+	const h = oklchColor.h ?? 0;
 	const { closest, secondClosest } = calcClosest(pattern, l);
 
 	// Special handling for edge case: amber 500 with orangePattern
@@ -71,24 +73,88 @@ const correctionThresholds = {
 	lightnessDistance$: literal(0.05), // When input is far from any standard shade
 } as const;
 
+function calcColor(
+	shade: Shade,
+	closestShade: Shade,
+	oklchColor: Oklch,
+	valuesC: number,
+	valuesL: number,
+	chromaScale: number,
+	maxStepsAbove: number,
+	maxStepsBelow: number,
+	shadesAbove: Shade[],
+	shadesBelow: Shade[],
+): Oklch {
+	const inputL = oklchColor.l;
+	const inputC = oklchColor.c;
+	const inputH = oklchColor.h ?? 0;
+
+	if (shade === closestShade) {
+		// Use exact input color for closest shade
+		return {
+			mode: "oklch" as const,
+			l: inputL,
+			c: inputC,
+			h: inputH,
+		};
+	}
+
+	// Calculate the scaled chroma (calculated)
+	const calculatedC = valuesC * chromaScale;
+
+	const targetC = (() => {
+		const blendRatio = (() => {
+			if (shade === 0 || shade === 1000) {
+				// Edge shades: use 100% calculated
+				return 1.0;
+			}
+			if (shade > closestShade && maxStepsAbove > 0) {
+				// Shades above closest: gradually transition from input to calculated
+				const stepsFromClosest = shadesAbove.indexOf(shade) + 1;
+				return stepsFromClosest / maxStepsAbove;
+			}
+			if (shade > closestShade && maxStepsAbove === 0) {
+				return 1.0;
+			}
+			if (shade < closestShade && maxStepsBelow > 0) {
+				// Shades below closest: gradually transition from input to calculated
+				const reversedBelow = [...shadesBelow].reverse();
+				const stepsFromClosest = reversedBelow.indexOf(shade) + 1;
+				return stepsFromClosest / maxStepsBelow;
+			}
+			return 1.0;
+		})();
+
+		// Blend between input chroma and calculated chroma
+		const blended = inputC * (1 - blendRatio) + calculatedC * blendRatio;
+
+		// Cap at ~0.37 to respect P3 gamut limits
+		return Math.min(blended, 0.37);
+	})();
+
+	return {
+		mode: "oklch" as const,
+		l: valuesL, // Pattern lightness
+		c: targetC,
+		h: inputH, // Keep hue constant
+	};
+}
+
 function detectStrongCorrection(
+	oklchColor: Oklch,
 	pattern: Pattern,
-	inputL: number,
 	closestShade: Shade,
 ): boolean {
-	// Only detect for mid-range shades (300-700)
 	if (closestShade < 300 || closestShade > 700) {
 		return false;
 	}
 
-	const { closest, secondClosest } = calcClosest(pattern, inputL);
+	const { closest, secondClosest } = calcClosest(pattern, oklchColor.l);
 
-	// Check if input is far from any standard shade
 	if (closest.diff > correctionThresholds.lightnessDistance$.literal) {
 		return true;
 	}
 
-	// Check if input is ambiguously between two shades
 	if (
 		secondClosest !== null &&
 		Math.abs(closest.diff - secondClosest.diff) <
@@ -101,107 +167,58 @@ function detectStrongCorrection(
 }
 
 export function generatePalette(oklchColor: Oklch): PaletteStep[] {
-	// Select the curve pattern
 	const pattern = selectPattern(oklchColor);
-
-	// Determine where the input color sits on the curve
-	const inputL = oklchColor.l ?? 0;
-	const inputC = oklchColor.c ?? 0;
-	const inputH = oklchColor.h ?? 0;
-
-	const closestShade = getClosestShade(inputL, inputH, pattern);
-
-	// Detect if the input color needs strong correction
-	const isInputAmbiguous = detectStrongCorrection(pattern, inputL, closestShade);
-
-	// Calculate chroma scaling ratio
+	const closestShade = getClosestShade(oklchColor, pattern);
+	const isInputAmbiguous = detectStrongCorrection(
+		oklchColor,
+		pattern,
+		closestShade,
+	);
 	const defaultC = pattern[closestShade].c;
+	const chromaScale = 0.001 < defaultC ? oklchColor.c / defaultC : 1;
 
-	// If defaultC is 0 (shades 0/1000 or pure gray), use scale ratio of 1
-	const chromaScale = 0.001 < defaultC ? inputC / defaultC : 1;
-
-	// Get shade values as sorted array
 	const shades = Object.keys(pattern)
 		.map(Number)
 		.sort((a, b) => a - b) as Shade[];
 
-	// Define transition boundaries (50 on low end, 950 on high end)
 	const lowerBoundary = 50;
 	const upperBoundary = 950;
 
-	// Calculate max transition distances from closest shade
 	const shadesAbove = shades.filter(
 		(s) => s > closestShade && s <= upperBoundary,
 	);
+
 	const shadesBelow = shades.filter(
 		(s) => s < closestShade && s >= lowerBoundary,
 	);
+
 	const maxStepsAbove = shadesAbove.length;
 	const maxStepsBelow = shadesBelow.length;
 
-	// Generate palette
 	return Object.entries(pattern)
 		.map(([shadeStr, values]) => {
 			const shade = Number(shadeStr) as Shade;
 
-			const newColor: Oklch = (() => {
-				if (shade === closestShade) {
-					// Use exact input color for closest shade
-					return {
-						mode: "oklch" as const,
-						l: inputL,
-						c: inputC,
-						h: inputH,
-					};
-				}
-
-				// Calculate the scaled chroma (calculated)
-				const calculatedC = values.c * chromaScale;
-
-				const targetC = (() => {
-					const blendRatio = (() => {
-						if (shade === 0 || shade === 1000) {
-							// Edge shades: use 100% calculated
-							return 1.0;
-						}
-						if (shade > closestShade && maxStepsAbove > 0) {
-							// Shades above closest: gradually transition from input to calculated
-							const stepsFromClosest = shadesAbove.indexOf(shade) + 1;
-							return stepsFromClosest / maxStepsAbove;
-						}
-						if (shade > closestShade && maxStepsAbove === 0) {
-							return 1.0;
-						}
-						if (shade < closestShade && maxStepsBelow > 0) {
-							// Shades below closest: gradually transition from input to calculated
-							const reversedBelow = [...shadesBelow].reverse();
-							const stepsFromClosest = reversedBelow.indexOf(shade) + 1;
-							return stepsFromClosest / maxStepsBelow;
-						}
-						return 1.0;
-					})();
-
-					// Blend between input chroma and calculated chroma
-					const blended = inputC * (1 - blendRatio) + calculatedC * blendRatio;
-
-					// Cap at ~0.37 to respect P3 gamut limits
-					return Math.min(blended, 0.37);
-				})();
-
-				return {
-					mode: "oklch" as const,
-					l: values.l, // Pattern lightness
-					c: targetC,
-					h: inputH, // Keep hue constant
-				};
-			})();
+			const isClosest = shade === closestShade;
+			const newColor = calcColor(
+				shade,
+				closestShade,
+				oklchColor,
+				values.c,
+				values.l,
+				chromaScale,
+				maxStepsAbove,
+				maxStepsBelow,
+				shadesAbove,
+				shadesBelow,
+			);
 
 			return {
 				shade,
 				hex: formatHex(newColor),
 				oklch: newColor,
-				isClosest: shade === closestShade,
-				needsStrongCorrection: shade === closestShade && isInputAmbiguous,
+				isClosest,
+				needsStrongCorrection: isClosest && isInputAmbiguous,
 			};
 		})
 		.sort((a, b) => a.shade - b.shade);
