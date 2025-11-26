@@ -59,6 +59,7 @@ function getClosestShade(l: number, h: number, pattern: Pattern): Shade {
 export type PaletteStep = {
 	shade: Shade;
 	hex: string;
+	oklch: Oklch;
 	isClosest: boolean;
 };
 
@@ -153,6 +154,7 @@ export function generatePalette(oklchColor: Oklch): PaletteStep[] {
 			return {
 				shade,
 				hex: formatHex(newColor),
+				oklch: newColor,
 				isClosest: shade === closestShade,
 			};
 		})
