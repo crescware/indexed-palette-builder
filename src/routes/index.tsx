@@ -4,7 +4,7 @@ import { isServer } from "solid-js/web";
 
 import { SettingsPopup } from "../components/settings-popup";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
-import { isValidHex } from "../models/color/is-valid-hex";
+import { isValidHex } from "../utils/is-valid-hex";
 
 export default function Home() {
 	const [color, setColor] = createSignal({

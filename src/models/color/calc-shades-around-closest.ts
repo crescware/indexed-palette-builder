@@ -9,11 +9,10 @@ export function calcShadesAroundClosest(
 	shades: readonly Shade[],
 	closestShade: Shade,
 ): Return {
-	const lowerBoundary = 50;
-	const upperBoundary = 950;
+	const filtered = shades.filter((v) => 50 <= v && v <= 950);
 
 	return {
-		above: shades.filter((s) => s > closestShade && s <= upperBoundary),
-		below: shades.filter((s) => s < closestShade && s >= lowerBoundary),
+		above: filtered.filter((v) => closestShade < v),
+		below: filtered.filter((v) => v < closestShade),
 	};
 }

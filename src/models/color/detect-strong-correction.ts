@@ -14,13 +14,13 @@ export function detectStrongCorrection(
 	pattern: Pattern,
 	closestShade: Shade,
 ): boolean {
-	if (closestShade < 300 || closestShade > 700) {
+	if (closestShade < 300 || 700 < closestShade) {
 		return false;
 	}
 
 	const { closest, secondClosest } = calcClosest(pattern, oklchColor.l);
 
-	if (closest.diff > correctionThresholds.lightnessDistance$.literal) {
+	if (correctionThresholds.lightnessDistance$.literal < closest.diff) {
 		return true;
 	}
 
