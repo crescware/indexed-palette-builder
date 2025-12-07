@@ -5,6 +5,7 @@ import { ColorPalette } from "../components/color-palette";
 import { Header } from "../components/header";
 import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
+import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
 
 export default function Home() {
@@ -15,11 +16,11 @@ export default function Home() {
 	});
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
-	const [theme, setTheme] = createSignal<"light" | "dark" | "system">("system");
+	const [theme, setTheme] = createSignal<Theme>("system");
 	const [showEdgeShades, setShowEdgeShades] = createSignal(false);
 	let settingsContainerRef: HTMLDivElement | undefined;
 
-	const applyTheme = (newTheme: "light" | "dark" | "system") => {
+	const applyTheme = (newTheme: Theme) => {
 		if (isServer) {
 			return;
 		}

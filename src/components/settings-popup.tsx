@@ -2,11 +2,13 @@ import { X } from "lucide-solid";
 import type { Accessor, Setter } from "solid-js";
 import { Show } from "solid-js";
 
+import type { Theme } from "../models/theme";
+
 type Props = Readonly<{
 	isOpen: Accessor<boolean>;
 	setIsOpen: Setter<boolean>;
-	theme: Accessor<"light" | "dark" | "system">;
-	applyTheme: (theme: "light" | "dark" | "system") => void;
+	theme: Accessor<Theme>;
+	applyTheme: (theme: Theme) => void;
 	showEdgeShades: Accessor<boolean>;
 	setShowEdgeShades: Setter<boolean>;
 }>;
