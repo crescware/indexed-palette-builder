@@ -1,8 +1,7 @@
-import { Settings } from "lucide-solid";
 import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { isServer } from "solid-js/web";
 
-import { SettingsPopup } from "../components/settings-popup";
+import { Header } from "../components/header";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import { isValidHex } from "../utils/is-valid-hex";
 
@@ -110,37 +109,25 @@ export default function Home() {
 		navigator.clipboard.writeText(cssOutput());
 	};
 
+	const handleOnClickSettingsButton = () => {
+		setIsSettingsOpen(!isSettingsOpen());
+	};
+
 	return (
-		<div class="flex justify-center h-screen">
-			<main class="text-center text-gray-700 dark:text-gray-300 h-full bg-gray-50 dark:bg-gray-950 flex flex-col max-w-7xl w-full">
-				<div class="relative py-3">
-					<h1 class="max-6-xs text-2xl text-sky-700 dark:text-sky-400 font-thin uppercase px-4">
-						Indexed Palette Builder
-					</h1>
-
-					<div
-						class="absolute top-1/2 -translate-y-1/2 right-4"
-						ref={settingsContainerRef}
-					>
-						<button
-							type="button"
-							onClick={() => setIsSettingsOpen(!isSettingsOpen())}
-							class="p-2 text-gray-600 dark:text-gray-400 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-							aria-label="Settings"
-						>
-							<Settings size={20} />
-						</button>
-
-						<SettingsPopup
-							isOpen={isSettingsOpen}
-							setIsOpen={setIsSettingsOpen}
-							theme={theme}
-							applyTheme={applyTheme}
-							showEdgeShades={showEdgeShades}
-							setShowEdgeShades={setShowEdgeShades}
-						/>
-					</div>
-				</div>
+		<div class="flex justify-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
+			<main class="text-center h-full flex flex-col max-w-7xl w-full">
+				<Header
+					settingsContainerRef={(el) => {
+						settingsContainerRef = el;
+					}}
+					isSettingsOpen={isSettingsOpen}
+					setIsSettingsOpen={setIsSettingsOpen}
+					onClickSettingsButton={handleOnClickSettingsButton}
+					theme={theme}
+					applyTheme={applyTheme}
+					showEdgeShades={showEdgeShades}
+					setShowEdgeShades={setShowEdgeShades}
+				/>
 
 				<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
 					{/* Left Column: Palette Builder */}
