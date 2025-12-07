@@ -1,12 +1,14 @@
-import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { isServer } from "solid-js/web";
 
+import { ColorPalette } from "../components/color-palette";
 import { Header } from "../components/header";
+import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import { isValidHex } from "../utils/is-valid-hex";
 
 export default function Home() {
-	const [color, setColor] = createSignal({
+	const [color, setColor] = createSignal<ColorState>({
 		name: "primary",
 		input: "#3b82f6", // Default to blue-500
 		palette: generatePaletteFromHex("#3b82f6"),
@@ -132,80 +134,15 @@ export default function Home() {
 				<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
 					{/* Left Column: Palette Builder */}
 					<div class="flex flex-col gap-3 min-h-0">
-						<div class="flex gap-3 items-center min-w-0">
-							{/* Input fields on the left */}
-							<div class="flex-shrink-0 w-36 flex flex-col gap-2">
-								<div class="flex flex-col gap-1">
-									<label
-										for="name-input"
-										class="block text-xs font-medium text-gray-700 dark:text-gray-300 text-left"
-									>
-										Color Name
-									</label>
-									<input
-										id="name-input"
-										type="text"
-										value={color().name}
-										onInput={(e) =>
-											setColor({ ...color(), name: e.target.value })
-										}
-										class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-										placeholder="primary"
-									/>
-								</div>
-
-								<div class="flex flex-col gap-1">
-									<label
-										for="color-input"
-										class="block text-xs font-medium text-gray-700 dark:text-gray-300 text-left"
-									>
-										Hex Color
-									</label>
-									<input
-										id="color-input"
-										type="text"
-										value={color().input}
-										onInput={handleInput}
-										class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-										placeholder="#000000"
-									/>
-								</div>
-							</div>
-
-							{/* Color squares arranged horizontally */}
-							<div class="flex-1 flex flex-col items-center min-w-0 gap-2">
-								<div
-									class="w-full grid gap-[1%]"
-									style={{
-										"grid-template-columns": `repeat(${gridColumns()}, 1fr)`,
-									}}
-								>
-									{displayedPalette().map((item) => (
-										<div class="flex flex-col items-center gap-1">
-											<div
-												class="aspect-square rounded transition-all w-full"
-												style={{ "background-color": item.hex }}
-												title={`${item.shade}: ${item.hex}`}
-											/>
-											{item.isClosest && (
-												<div class="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
-											)}
-										</div>
-									))}
-								</div>
-
-								{/* Reserved area for warning messages */}
-								<div class="text-sm text-gray-600 dark:text-gray-400 h-5">
-									<Show when={hiddenClosestEdgeShade() !== null}>
-										Closest to edge shade {hiddenClosestEdgeShade()}
-									</Show>
-									<Show when={needsStrongCorrection()}>
-										This color does not look like Tailwind, so strong correction
-										is being applied
-									</Show>
-								</div>
-							</div>
-						</div>
+						<ColorPalette
+							color={color}
+							setColor={setColor}
+							handleInput={handleInput}
+							gridColumns={gridColumns}
+							displayedPalette={displayedPalette}
+							hiddenClosestEdgeShade={hiddenClosestEdgeShade}
+							needsStrongCorrection={needsStrongCorrection}
+						/>
 					</div>
 
 					{/* Right Column: CSS Export */}
