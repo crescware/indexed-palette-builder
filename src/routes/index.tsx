@@ -188,14 +188,16 @@ export default function Home() {
 		setDropTargetIndex(index);
 	};
 
-	const handleDrop = (targetIndex: number) => {
+	const handleDrop = (e: DragEvent, targetIndex: number) => {
+		e.preventDefault();
 		const dragged = draggedIndex();
-		if (dragged === null || dragged === targetIndex) return;
+		if (dragged === null || dragged === targetIndex) {
+			return;
+		}
 
 		const newColors = [...colors()];
 		const [removed] = newColors.splice(dragged, 1);
-		const insertIndex = targetIndex > dragged ? targetIndex : targetIndex;
-		newColors.splice(insertIndex, 0, removed);
+		newColors.splice(targetIndex, 0, removed);
 		setColors(newColors);
 
 		setDraggedIndex(null);
@@ -222,30 +224,40 @@ export default function Home() {
 
 				<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
 					{/* Left Column: Palette Builder */}
-					<div class="flex flex-col gap-3 min-h-0">
+					<div class="flex flex-col gap-3 min-h-0 overflow-y-auto">
 						<Index each={colors()}>
 							{(_, index) => {
 								const displayedPalette = createDisplayedPalette(index);
 								const gridColumns = createGridColumns(displayedPalette);
-								const dragged = draggedIndex();
-								const dropTarget = dropTargetIndex();
-								const showDropBefore =
-									dropTarget === index && dragged !== null && dragged > index;
-								const showDropAfter =
-									dropTarget === index && dragged !== null && dragged < index;
+								const showDropBefore = createMemo(() => {
+									const dragged = draggedIndex();
+									const dropTarget = dropTargetIndex();
+									return (
+										dropTarget === index && dragged !== null && dragged > index
+									);
+								});
+								const showDropAfter = createMemo(() => {
+									const dragged = draggedIndex();
+									const dropTarget = dropTargetIndex();
+									return (
+										dropTarget === index && dragged !== null && dragged < index
+									);
+								});
 								return (
-									<>
-										<Show when={showDropBefore}>
-											<div class="h-1 bg-sky-500 rounded-full" />
-										</Show>
-										{/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop requires these handlers */}
+									// biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop requires these handlers
+									<div
+										onDragOver={(e) => handleDragOver(e, index)}
+										onDrop={(e) => handleDrop(e, index)}
+									>
+										<div
+											class={`h-1 rounded-full transition-colors ${showDropBefore() ? "bg-sky-500" : "bg-transparent"}`}
+										/>
+										{/* biome-ignore lint/a11y/noStaticElementInteractions: draggable element */}
 										<div
 											class="flex items-center gap-4"
 											draggable={isEditMode()}
 											onDragStart={() => handleDragStart(index)}
 											onDragEnd={handleDragEnd}
-											onDragOver={(e) => handleDragOver(e, index)}
-											onDrop={() => handleDrop(index)}
 										>
 											<Show when={isEditMode()}>
 												<span
@@ -284,10 +296,10 @@ export default function Home() {
 												</button>
 											</Show>
 										</div>
-										<Show when={showDropAfter}>
-											<div class="h-1 bg-sky-500 rounded-full" />
-										</Show>
-									</>
+										<div
+											class={`h-1 rounded-full transition-colors ${showDropAfter() ? "bg-sky-500" : "bg-transparent"}`}
+										/>
+									</div>
 								);
 							}}
 						</Index>
