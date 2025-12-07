@@ -34,6 +34,10 @@ export default function Home() {
 	const [theme, setTheme] = createSignal<Theme>("system");
 	const [showEdgeShades, setShowEdgeShades] = createSignal(false);
 	const [isEditMode, setIsEditMode] = createSignal(false);
+	const [draggedIndex, setDraggedIndex] = createSignal<number | null>(null);
+	const [dropTargetIndex, setDropTargetIndex] = createSignal<number | null>(
+		null,
+	);
 	let settingsContainerRef: HTMLDivElement | undefined;
 
 	const applyTheme = (newTheme: Theme) => {
@@ -165,6 +169,39 @@ export default function Home() {
 		}
 	};
 
+	const handleDragStart = (index: number) => {
+		setDraggedIndex(index);
+	};
+
+	const handleDragEnd = () => {
+		setDraggedIndex(null);
+		setDropTargetIndex(null);
+	};
+
+	const handleDragOver = (e: DragEvent, index: number) => {
+		e.preventDefault();
+		const dragged = draggedIndex();
+		if (dragged === null || dragged === index) {
+			setDropTargetIndex(null);
+			return;
+		}
+		setDropTargetIndex(index);
+	};
+
+	const handleDrop = (targetIndex: number) => {
+		const dragged = draggedIndex();
+		if (dragged === null || dragged === targetIndex) return;
+
+		const newColors = [...colors()];
+		const [removed] = newColors.splice(dragged, 1);
+		const insertIndex = targetIndex > dragged ? targetIndex : targetIndex;
+		newColors.splice(insertIndex, 0, removed);
+		setColors(newColors);
+
+		setDraggedIndex(null);
+		setDropTargetIndex(null);
+	};
+
 	return (
 		<div class="flex justify-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
 			<main class="text-center h-full flex flex-col max-w-7xl w-full">
@@ -190,45 +227,67 @@ export default function Home() {
 							{(_, index) => {
 								const displayedPalette = createDisplayedPalette(index);
 								const gridColumns = createGridColumns(displayedPalette);
+								const dragged = draggedIndex();
+								const dropTarget = dropTargetIndex();
+								const showDropBefore =
+									dropTarget === index && dragged !== null && dragged > index;
+								const showDropAfter =
+									dropTarget === index && dragged !== null && dragged < index;
 								return (
-									<div class="flex items-center gap-4">
-										<Show when={isEditMode()}>
-											<button
-												type="button"
-												class="text-gray-500 dark:text-gray-400 cursor-grab"
-												aria-label="Reorder"
-											>
-												<GripVertical size={20} />
-											</button>
+									<>
+										<Show when={showDropBefore}>
+											<div class="h-1 bg-sky-500 rounded-full" />
 										</Show>
-										<div class="flex-1">
-											<ColorPalette
-												color={getColor(index)}
-												setColor={setColorAt(index)}
-												handleInput={createHandleInput(index)}
-												gridColumns={gridColumns}
-												displayedPalette={displayedPalette}
-												hiddenClosestEdgeShade={createHiddenClosestEdgeShade(
-													index,
-												)}
-												needsStrongCorrection={createNeedsStrongCorrection(
-													index,
-												)}
-												isEditMode={isEditMode}
-											/>
+										{/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop requires these handlers */}
+										<div
+											class="flex items-center gap-4"
+											draggable={isEditMode()}
+											onDragStart={() => handleDragStart(index)}
+											onDragEnd={handleDragEnd}
+											onDragOver={(e) => handleDragOver(e, index)}
+											onDrop={() => handleDrop(index)}
+										>
+											<Show when={isEditMode()}>
+												<span
+													class="text-gray-500 dark:text-gray-400 cursor-grab active:cursor-grabbing"
+													role="img"
+													aria-label="Reorder"
+												>
+													<GripVertical size={20} />
+												</span>
+											</Show>
+											<div class="flex-1">
+												<ColorPalette
+													color={getColor(index)}
+													setColor={setColorAt(index)}
+													handleInput={createHandleInput(index)}
+													gridColumns={gridColumns}
+													displayedPalette={displayedPalette}
+													hiddenClosestEdgeShade={createHiddenClosestEdgeShade(
+														index,
+													)}
+													needsStrongCorrection={createNeedsStrongCorrection(
+														index,
+													)}
+													isEditMode={isEditMode}
+												/>
+											</div>
+											<Show when={isEditMode()}>
+												<button
+													type="button"
+													onClick={() => handleDeletePalette(index)}
+													disabled={colors().length === 1}
+													class="p-2 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100 dark:active:bg-red-900 rounded-lg transition-colors disabled:text-gray-300 dark:disabled:text-gray-600 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+													aria-label="Delete"
+												>
+													<Trash2 size={20} />
+												</button>
+											</Show>
 										</div>
-										<Show when={isEditMode()}>
-											<button
-												type="button"
-												onClick={() => handleDeletePalette(index)}
-												disabled={colors().length === 1}
-												class="p-2 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100 dark:active:bg-red-900 rounded-lg transition-colors disabled:text-gray-300 dark:disabled:text-gray-600 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-												aria-label="Delete"
-											>
-												<Trash2 size={20} />
-											</button>
+										<Show when={showDropAfter}>
+											<div class="h-1 bg-sky-500 rounded-full" />
 										</Show>
-									</div>
+									</>
 								);
 							}}
 						</Index>
