@@ -134,11 +134,11 @@ export default function Home() {
 					<div class="flex flex-col gap-3 min-h-0">
 						<div class="flex gap-3 items-center min-w-0">
 							{/* Input fields on the left */}
-							<div class="flex-shrink-0 w-36 space-y-2">
+							<div class="flex-shrink-0 w-36 flex flex-col gap-2">
 								<div class="flex flex-col gap-1">
 									<label
 										for="name-input"
-										class="block text-xs font-medium text-gray-700 dark:text-gray-300"
+										class="block text-xs font-medium text-gray-700 dark:text-gray-300 text-left"
 									>
 										Color Name
 									</label>
@@ -157,7 +157,7 @@ export default function Home() {
 								<div class="flex flex-col gap-1">
 									<label
 										for="color-input"
-										class="block text-xs font-medium text-gray-700 dark:text-gray-300"
+										class="block text-xs font-medium text-gray-700 dark:text-gray-300 text-left"
 									>
 										Hex Color
 									</label>
