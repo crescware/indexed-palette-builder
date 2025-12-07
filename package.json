@@ -2,22 +2,22 @@
 	"name": "example-with-tailwindcss",
 	"version": "0.0.1",
 	"dependencies": {
-		"@solidjs/router": "0.15.0",
-		"@solidjs/start": "1.1.0",
+		"@solidjs/router": "0.15.4",
+		"@solidjs/start": "1.2.0",
 		"culori": "4.0.2",
-		"lucide-solid": "0.554.0",
+		"lucide-solid": "0.556.0",
 		"solid-js": "1.9.10",
 		"valibot": "1.2.0",
-		"vinxi": "0.5.7"
+		"vinxi": "0.5.8"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.3.7",
-		"@tailwindcss/vite": "4.0.7",
+		"@biomejs/biome": "2.3.8",
+		"@tailwindcss/vite": "4.1.17",
 		"@types/culori": "4.0.1",
 		"@types/node": "24.10.1",
-		"@typescript/native-preview": "7.0.0-dev.20251123.1",
-		"tailwindcss": "4.0.7",
-		"vitest": "4.0.13"
+		"@typescript/native-preview": "7.0.0-dev.20251129.1",
+		"tailwindcss": "4.1.17",
+		"vitest": "4.0.15"
 	},
 	"engines": {
 		"node": "24.11.1",
