@@ -254,7 +254,7 @@ export default function Home() {
 										/>
 										{/* biome-ignore lint/a11y/noStaticElementInteractions: draggable element */}
 										<div
-											class="flex items-center gap-4"
+											class={`flex items-center gap-4 ${draggedIndex() === index ? "opacity-30" : ""}`}
 											draggable={isEditMode()}
 											onDragStart={() => handleDragStart(index)}
 											onDragEnd={handleDragEnd}
