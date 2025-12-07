@@ -3,7 +3,7 @@ import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { isServer } from "solid-js/web";
 
 import { SettingsPopup } from "../components/settings-popup";
-import { generatePaletteFromHex } from "../utils/generate-palette-from-hex";
+import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import { isValidHex } from "../utils/is-valid-hex";
 
 export default function Home() {
@@ -93,6 +93,11 @@ export default function Home() {
 		return null;
 	});
 
+	const needsStrongCorrection = createMemo(() => {
+		const closest = color().palette.find((item) => item.isClosest);
+		return closest?.needsStrongCorrection ?? false;
+	});
+
 	const cssOutput = createMemo(() => {
 		const colorName = color().name.trim() || "primary";
 		return color()
@@ -106,7 +111,7 @@ export default function Home() {
 	};
 
 	return (
-		<main class="text-center mx-auto text-gray-700 dark:text-gray-300 h-screen bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
+		<main class="text-center mx-auto text-gray-700 dark:text-gray-300 h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
 			<div class="relative">
 				<h1 class="max-6-xs text-2xl text-sky-700 dark:text-sky-400 font-thin uppercase my-3 px-4">
 					Indexed Palette Builder
@@ -138,7 +143,7 @@ export default function Home() {
 
 			<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 max-w-7xl w-full mx-auto flex-1 min-h-0 px-4 pb-4">
 				{/* Left Column: Palette Builder */}
-				<div class="flex flex-col gap-3 min-h-0 overflow-hidden">
+				<div class="flex flex-col gap-3 min-h-0">
 					<div class="flex gap-3 items-center min-w-0">
 						{/* Input fields on the left */}
 						<div class="flex-shrink-0 w-36 space-y-2">
@@ -201,12 +206,16 @@ export default function Home() {
 								))}
 							</div>
 
-							{/* Detection message for hidden edge shades */}
-							<Show when={hiddenClosestEdgeShade() !== null}>
-								<div class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+							{/* Reserved area for warning messages */}
+							<div class="text-sm text-gray-600 dark:text-gray-400 mt-2 h-5">
+								<Show when={hiddenClosestEdgeShade() !== null}>
 									Closest to edge shade {hiddenClosestEdgeShade()}
-								</div>
-							</Show>
+								</Show>
+								<Show when={needsStrongCorrection()}>
+									This color does not look like Tailwind, so strong correction
+									is being applied
+								</Show>
+							</div>
 						</div>
 					</div>
 				</div>

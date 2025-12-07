@@ -68,4 +68,41 @@ describe("generatePaletteFromOklchString", () => {
 			"Invalid OKLCH color string",
 		);
 	});
+
+	describe("palette should contain all expected shades", () => {
+		const expectedShades = [
+			50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950,
+		];
+
+		for (const colorName of colorNames) {
+			const color = colors.find((c) => c.name === colorName);
+
+			test.each([
+				{ shadeNumber: 50 },
+				{ shadeNumber: 100 },
+				{ shadeNumber: 200 },
+				{ shadeNumber: 300 },
+				{ shadeNumber: 400 },
+				{ shadeNumber: 500 },
+				{ shadeNumber: 600 },
+				{ shadeNumber: 700 },
+				{ shadeNumber: 800 },
+				{ shadeNumber: 900 },
+				{ shadeNumber: 950 },
+			])(`${colorName} $shadeNumber should generate all shades from 50 to 950`, ({
+				shadeNumber,
+			}) => {
+				const colorShade = color?.grid.find((g) => g.number === shadeNumber);
+				if (!colorShade) {
+					throw new Error(`Color shade ${shadeNumber} not found`);
+				}
+				const palette = generatePaletteFromOklchString(colorShade.value);
+				const generatedShades = palette
+					.map((step) => step.shade)
+					.filter((shade) => shade >= 50 && shade <= 950);
+
+				expect(generatedShades).toEqual(expectedShades);
+			});
+		}
+	});
 });
