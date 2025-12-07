@@ -23,7 +23,10 @@ export function Header(props: Props) {
 				Indexed Palette Builder
 			</h1>
 
-			<div class="flex items-center gap-2" ref={props.settingsContainerRef}>
+			<div
+				class="relative flex items-center gap-2"
+				ref={props.settingsContainerRef}
+			>
 				<button
 					type="button"
 					onClick={props.onClickEditButton}
