@@ -1,5 +1,5 @@
 import { Plus } from "lucide-solid";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { createMemo, createSignal, Index, onCleanup, onMount } from "solid-js";
 import { isServer } from "solid-js/web";
 
 import { ColorPalette } from "../components/color-palette";
@@ -18,9 +18,9 @@ export default function Home() {
 		},
 	]);
 
-	const color = () => colors()[0];
-	const setColor = (value: ColorState) => {
-		setColors([value, ...colors().slice(1)]);
+	const getColor = (index: number) => () => colors()[index];
+	const setColorAt = (index: number) => (value: ColorState) => {
+		setColors(colors().map((c, i) => (i === index ? value : c)));
 	};
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
@@ -70,9 +70,11 @@ export default function Home() {
 		});
 	});
 
-	const handleInput = (e: Event) => {
+	const createHandleInput = (index: number) => (e: Event) => {
 		const target = e.target as HTMLInputElement;
 		const value = target.value;
+		const color = getColor(index);
+		const setColor = setColorAt(index);
 		setColor({ ...color(), input: value });
 
 		if (isValidHex(value)) {
@@ -84,29 +86,33 @@ export default function Home() {
 		}
 	};
 
-	const displayedPalette = createMemo(() => {
-		const palette = color().palette;
-		if (showEdgeShades()) {
-			return palette;
-		}
-		return palette.filter((item) => item.shade !== 0 && item.shade !== 1000);
-	});
+	const createDisplayedPalette = (index: number) =>
+		createMemo(() => {
+			const palette = colors()[index].palette;
+			if (showEdgeShades()) {
+				return palette;
+			}
+			return palette.filter((item) => item.shade !== 0 && item.shade !== 1000);
+		});
 
-	const gridColumns = createMemo(() => displayedPalette().length);
+	const createGridColumns = (displayedPalette: () => readonly unknown[]) =>
+		createMemo(() => displayedPalette().length);
 
-	const hiddenClosestEdgeShade = createMemo(() => {
-		if (showEdgeShades()) return null;
-		const closest = color().palette.find((item) => item.isClosest);
-		if (closest && (closest.shade === 0 || closest.shade === 1000)) {
-			return closest.shade;
-		}
-		return null;
-	});
+	const createHiddenClosestEdgeShade = (index: number) =>
+		createMemo(() => {
+			if (showEdgeShades()) return null;
+			const closest = colors()[index].palette.find((item) => item.isClosest);
+			if (closest && (closest.shade === 0 || closest.shade === 1000)) {
+				return closest.shade;
+			}
+			return null;
+		});
 
-	const needsStrongCorrection = createMemo(() => {
-		const closest = color().palette.find((item) => item.isClosest);
-		return closest?.needsStrongCorrection ?? false;
-	});
+	const createNeedsStrongCorrection = (index: number) =>
+		createMemo(() => {
+			const closest = colors()[index].palette.find((item) => item.isClosest);
+			return closest?.needsStrongCorrection ?? false;
+		});
 
 	const cssOutput = createMemo(() => {
 		return colors()
@@ -128,6 +134,17 @@ export default function Home() {
 		setIsSettingsOpen(!isSettingsOpen());
 	};
 
+	const handleAddPalette = () => {
+		setColors([
+			...colors(),
+			{
+				name: "primary",
+				input: "#3b82f6",
+				palette: generatePaletteFromHex("#3b82f6"),
+			},
+		]);
+	};
+
 	return (
 		<div class="flex justify-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
 			<main class="text-center h-full flex flex-col max-w-7xl w-full">
@@ -147,17 +164,26 @@ export default function Home() {
 				<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
 					{/* Left Column: Palette Builder */}
 					<div class="flex flex-col gap-3 min-h-0">
-						<ColorPalette
-							color={color}
-							setColor={setColor}
-							handleInput={handleInput}
-							gridColumns={gridColumns}
-							displayedPalette={displayedPalette}
-							hiddenClosestEdgeShade={hiddenClosestEdgeShade}
-							needsStrongCorrection={needsStrongCorrection}
-						/>
+						<Index each={colors()}>
+							{(_, index) => {
+								const displayedPalette = createDisplayedPalette(index);
+								const gridColumns = createGridColumns(displayedPalette);
+								return (
+									<ColorPalette
+										color={getColor(index)}
+										setColor={setColorAt(index)}
+										handleInput={createHandleInput(index)}
+										gridColumns={gridColumns}
+										displayedPalette={displayedPalette}
+										hiddenClosestEdgeShade={createHiddenClosestEdgeShade(index)}
+										needsStrongCorrection={createNeedsStrongCorrection(index)}
+									/>
+								);
+							}}
+						</Index>
 						<button
 							type="button"
+							onClick={handleAddPalette}
 							class="w-full flex flex-col items-center gap-1 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors"
 						>
 							<Plus size={20} />
