@@ -1,5 +1,5 @@
 import { Settings } from "lucide-solid";
-import type { ComponentProps } from "solid-js";
+import type { Accessor, ComponentProps } from "solid-js";
 
 import { SettingsPopup } from "./settings-popup";
 
@@ -8,6 +8,8 @@ type Props = Readonly<{
 	isSettingsOpen: ComponentProps<typeof SettingsPopup>["isOpen"];
 	setIsSettingsOpen: ComponentProps<typeof SettingsPopup>["setIsOpen"];
 	onClickSettingsButton: () => void;
+	isEditMode: Accessor<boolean>;
+	onClickEditButton: () => void;
 }> &
 	Pick<
 		ComponentProps<typeof SettingsPopup>,
@@ -21,7 +23,14 @@ export function Header(props: Props) {
 				Indexed Palette Builder
 			</h1>
 
-			<div ref={props.settingsContainerRef}>
+			<div class="flex items-center gap-2" ref={props.settingsContainerRef}>
+				<button
+					type="button"
+					onClick={props.onClickEditButton}
+					class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+				>
+					{props.isEditMode() ? "Done" : "Edit"}
+				</button>
 				<button
 					type="button"
 					onClick={props.onClickSettingsButton}

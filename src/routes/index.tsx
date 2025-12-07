@@ -1,5 +1,12 @@
-import { Plus } from "lucide-solid";
-import { createMemo, createSignal, Index, onCleanup, onMount } from "solid-js";
+import { GripVertical, Plus, Trash2 } from "lucide-solid";
+import {
+	createMemo,
+	createSignal,
+	Index,
+	onCleanup,
+	onMount,
+	Show,
+} from "solid-js";
 import { isServer } from "solid-js/web";
 
 import { ColorPalette } from "../components/color-palette";
@@ -26,6 +33,7 @@ export default function Home() {
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
 	const [theme, setTheme] = createSignal<Theme>("system");
 	const [showEdgeShades, setShowEdgeShades] = createSignal(false);
+	const [isEditMode, setIsEditMode] = createSignal(false);
 	let settingsContainerRef: HTMLDivElement | undefined;
 
 	const applyTheme = (newTheme: Theme) => {
@@ -159,6 +167,8 @@ export default function Home() {
 					applyTheme={applyTheme}
 					showEdgeShades={showEdgeShades}
 					setShowEdgeShades={setShowEdgeShades}
+					isEditMode={isEditMode}
+					onClickEditButton={() => setIsEditMode(!isEditMode())}
 				/>
 
 				<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
@@ -169,15 +179,42 @@ export default function Home() {
 								const displayedPalette = createDisplayedPalette(index);
 								const gridColumns = createGridColumns(displayedPalette);
 								return (
-									<ColorPalette
-										color={getColor(index)}
-										setColor={setColorAt(index)}
-										handleInput={createHandleInput(index)}
-										gridColumns={gridColumns}
-										displayedPalette={displayedPalette}
-										hiddenClosestEdgeShade={createHiddenClosestEdgeShade(index)}
-										needsStrongCorrection={createNeedsStrongCorrection(index)}
-									/>
+									<div class="flex items-center gap-4">
+										<Show when={isEditMode()}>
+											<button
+												type="button"
+												class="text-gray-500 dark:text-gray-400 cursor-grab"
+												aria-label="Reorder"
+											>
+												<GripVertical size={20} />
+											</button>
+										</Show>
+										<div class="flex-1">
+											<ColorPalette
+												color={getColor(index)}
+												setColor={setColorAt(index)}
+												handleInput={createHandleInput(index)}
+												gridColumns={gridColumns}
+												displayedPalette={displayedPalette}
+												hiddenClosestEdgeShade={createHiddenClosestEdgeShade(
+													index,
+												)}
+												needsStrongCorrection={createNeedsStrongCorrection(
+													index,
+												)}
+												isEditMode={isEditMode}
+											/>
+										</div>
+										<Show when={isEditMode()}>
+											<button
+												type="button"
+												class="text-red-500 dark:text-red-400"
+												aria-label="Delete"
+											>
+												<Trash2 size={20} />
+											</button>
+										</Show>
+									</div>
 								);
 							}}
 						</Index>
