@@ -153,6 +153,15 @@ export default function Home() {
 		]);
 	};
 
+	const handleDeletePalette = (index: number) => {
+		if (colors().length === 1) {
+			throw new Error("Cannot delete the last palette");
+		}
+		if (confirm("Are you sure you want to delete this palette?")) {
+			setColors(colors().filter((_, i) => i !== index));
+		}
+	};
+
 	return (
 		<div class="flex justify-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
 			<main class="text-center h-full flex flex-col max-w-7xl w-full">
@@ -208,7 +217,9 @@ export default function Home() {
 										<Show when={isEditMode()}>
 											<button
 												type="button"
-												class="text-red-500 dark:text-red-400"
+												onClick={() => handleDeletePalette(index)}
+												disabled={colors().length === 1}
+												class="text-red-500 dark:text-red-400 disabled:text-gray-300 dark:disabled:text-gray-600 disabled:cursor-not-allowed"
 												aria-label="Delete"
 											>
 												<Trash2 size={20} />
