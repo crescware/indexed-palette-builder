@@ -122,10 +122,12 @@ export default function Home() {
 			return closest?.needsStrongCorrection ?? false;
 		});
 
+	const getColorName = (color: ColorState) => color.name.trim() || color.input;
+
 	const cssOutput = createMemo(() => {
 		return colors()
 			.map((c) => {
-				const colorName = c.name.trim() || "primary";
+				const colorName = getColorName(c).replace("#", "");
 				return c.palette
 					.filter((item) => item.shade !== 0 && item.shade !== 1000)
 					.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
@@ -157,7 +159,8 @@ export default function Home() {
 		if (colors().length === 1) {
 			throw new Error("Cannot delete the last palette");
 		}
-		if (confirm("Are you sure you want to delete this palette?")) {
+		const name = getColorName(colors()[index]);
+		if (confirm(`Are you sure you want to delete "${name}"?`)) {
 			setColors(colors().filter((_, i) => i !== index));
 		}
 	};
@@ -219,7 +222,7 @@ export default function Home() {
 												type="button"
 												onClick={() => handleDeletePalette(index)}
 												disabled={colors().length === 1}
-												class="text-red-500 dark:text-red-400 disabled:text-gray-300 dark:disabled:text-gray-600 disabled:cursor-not-allowed"
+												class="p-2 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100 dark:active:bg-red-900 rounded-lg transition-colors disabled:text-gray-300 dark:disabled:text-gray-600 disabled:hover:bg-transparent disabled:cursor-not-allowed"
 												aria-label="Delete"
 											>
 												<Trash2 size={20} />
