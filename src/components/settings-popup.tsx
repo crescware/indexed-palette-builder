@@ -14,8 +14,8 @@ type Props = Readonly<{
 export function SettingsPopup(props: Props) {
 	return (
 		<Show when={props.isOpen()}>
-			<div class="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 w-64 z-50">
-				<div class="flex justify-between items-center mb-3">
+			<div class="absolute top-[calc(100%+0.5rem)] right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 w-64 z-50 flex flex-col gap-3">
+				<div class="flex justify-between items-center">
 					<h2 class="text-base font-semibold text-gray-800 dark:text-gray-200">
 						Settings
 					</h2>
@@ -29,12 +29,12 @@ export function SettingsPopup(props: Props) {
 					</button>
 				</div>
 				<div class="space-y-4">
-					<div>
-						<div class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+					<div class="flex flex-col gap-2">
+						<div class="block text-sm font-medium text-gray-700 dark:text-gray-300">
 							Color Theme
 						</div>
 						<div class="space-y-2">
-							<label class="flex items-center cursor-pointer">
+							<label class="flex items-center gap-2 cursor-pointer">
 								<input
 									type="radio"
 									name="theme"
@@ -43,11 +43,11 @@ export function SettingsPopup(props: Props) {
 									onInput={() => props.applyTheme("light")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
-								<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+								<span class="text-sm text-gray-700 dark:text-gray-300">
 									Light
 								</span>
 							</label>
-							<label class="flex items-center cursor-pointer">
+							<label class="flex items-center gap-2 cursor-pointer">
 								<input
 									type="radio"
 									name="theme"
@@ -56,11 +56,11 @@ export function SettingsPopup(props: Props) {
 									onInput={() => props.applyTheme("dark")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
-								<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+								<span class="text-sm text-gray-700 dark:text-gray-300">
 									Dark
 								</span>
 							</label>
-							<label class="flex items-center cursor-pointer">
+							<label class="flex items-center gap-2 cursor-pointer">
 								<input
 									type="radio"
 									name="theme"
@@ -69,14 +69,14 @@ export function SettingsPopup(props: Props) {
 									onInput={() => props.applyTheme("system")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
-								<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+								<span class="text-sm text-gray-700 dark:text-gray-300">
 									System
 								</span>
 							</label>
 						</div>
 					</div>
 					<div>
-						<label class="flex items-center cursor-pointer">
+						<label class="flex items-center gap-2 cursor-pointer">
 							<input
 								type="checkbox"
 								checked={props.showEdgeShades()}
@@ -85,7 +85,7 @@ export function SettingsPopup(props: Props) {
 								}
 								class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 rounded focus:ring-sky-500"
 							/>
-							<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+							<span class="text-sm text-gray-700 dark:text-gray-300">
 								Show edge shades (0/1000)
 							</span>
 						</label>
