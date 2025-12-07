@@ -1,3 +1,4 @@
+import { Plus } from "lucide-solid";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { isServer } from "solid-js/web";
 
@@ -144,6 +145,13 @@ export default function Home() {
 							hiddenClosestEdgeShade={hiddenClosestEdgeShade}
 							needsStrongCorrection={needsStrongCorrection}
 						/>
+						<button
+							type="button"
+							class="w-full flex flex-col items-center gap-1 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors"
+						>
+							<Plus size={20} />
+							<span class="text-sm">Add Palette</span>
+						</button>
 					</div>
 
 					{/* Right Column: CSS Export */}
