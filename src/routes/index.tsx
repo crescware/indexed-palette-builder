@@ -10,11 +10,18 @@ import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
 
 export default function Home() {
-	const [color, setColor] = createSignal<ColorState>({
-		name: "primary",
-		input: "#3b82f6", // Default to blue-500
-		palette: generatePaletteFromHex("#3b82f6"),
-	});
+	const [colors, setColors] = createSignal<readonly ColorState[]>([
+		{
+			name: "primary",
+			input: "#3b82f6", // Default to blue-500
+			palette: generatePaletteFromHex("#3b82f6"),
+		},
+	]);
+
+	const color = () => colors()[0];
+	const setColor = (value: ColorState) => {
+		setColors([value, ...colors().slice(1)]);
+	};
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
 	const [theme, setTheme] = createSignal<Theme>("system");
@@ -102,11 +109,15 @@ export default function Home() {
 	});
 
 	const cssOutput = createMemo(() => {
-		const colorName = color().name.trim() || "primary";
-		return color()
-			.palette.filter((item) => item.shade !== 0 && item.shade !== 1000)
-			.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
-			.join("\n");
+		return colors()
+			.map((c) => {
+				const colorName = c.name.trim() || "primary";
+				return c.palette
+					.filter((item) => item.shade !== 0 && item.shade !== 1000)
+					.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
+					.join("\n");
+			})
+			.join("\n\n");
 	});
 
 	const copyToClipboard = () => {
