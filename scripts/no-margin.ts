@@ -1,5 +1,5 @@
-import fg from "fast-glob";
 import { readFileSync } from "node:fs";
+import fg from "fast-glob";
 
 type LintError = Readonly<{
 	file: string;
