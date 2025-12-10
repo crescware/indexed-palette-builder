@@ -1,24 +1,46 @@
-import { Settings } from "lucide-solid";
-import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
+import { GripVertical, Plus, Trash2 } from "lucide-solid";
+import {
+	createMemo,
+	createSignal,
+	Index,
+	onCleanup,
+	onMount,
+	Show,
+} from "solid-js";
 import { isServer } from "solid-js/web";
 
-import { SettingsPopup } from "../components/settings-popup";
+import { ColorPalette } from "../components/color-palette";
+import { Header } from "../components/header";
+import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
+import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
 
 export default function Home() {
-	const [color, setColor] = createSignal({
-		name: "primary",
-		input: "#3b82f6", // Default to blue-500
-		palette: generatePaletteFromHex("#3b82f6"),
-	});
+	const [colors, setColors] = createSignal<readonly ColorState[]>([
+		{
+			name: "primary",
+			input: "#3b82f6", // Default to blue-500
+			palette: generatePaletteFromHex("#3b82f6"),
+		},
+	]);
+
+	const getColor = (index: number) => () => colors()[index];
+	const setColorAt = (index: number) => (value: ColorState) => {
+		setColors(colors().map((c, i) => (i === index ? value : c)));
+	};
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
-	const [theme, setTheme] = createSignal<"light" | "dark" | "system">("system");
+	const [theme, setTheme] = createSignal<Theme>("system");
 	const [showEdgeShades, setShowEdgeShades] = createSignal(false);
+	const [isEditMode, setIsEditMode] = createSignal(false);
+	const [draggedIndex, setDraggedIndex] = createSignal<number | null>(null);
+	const [dropTargetIndex, setDropTargetIndex] = createSignal<number | null>(
+		null,
+	);
 	let settingsContainerRef: HTMLDivElement | undefined;
 
-	const applyTheme = (newTheme: "light" | "dark" | "system") => {
+	const applyTheme = (newTheme: Theme) => {
 		if (isServer) {
 			return;
 		}
@@ -60,9 +82,11 @@ export default function Home() {
 		});
 	});
 
-	const handleInput = (e: Event) => {
+	const createHandleInput = (index: number) => (e: Event) => {
 		const target = e.target as HTMLInputElement;
 		const value = target.value;
+		const color = getColor(index);
+		const setColor = setColorAt(index);
 		setColor({ ...color(), input: value });
 
 		if (isValidHex(value)) {
@@ -74,177 +98,248 @@ export default function Home() {
 		}
 	};
 
-	const displayedPalette = createMemo(() => {
-		const palette = color().palette;
-		if (showEdgeShades()) {
-			return palette;
-		}
-		return palette.filter((item) => item.shade !== 0 && item.shade !== 1000);
-	});
+	const createDisplayedPalette = (index: number) =>
+		createMemo(() => {
+			const palette = colors()[index].palette;
+			if (showEdgeShades()) {
+				return palette;
+			}
+			return palette.filter((item) => item.shade !== 0 && item.shade !== 1000);
+		});
 
-	const gridColumns = createMemo(() => displayedPalette().length);
+	const createGridColumns = (displayedPalette: () => readonly unknown[]) =>
+		createMemo(() => displayedPalette().length);
 
-	const hiddenClosestEdgeShade = createMemo(() => {
-		if (showEdgeShades()) return null;
-		const closest = color().palette.find((item) => item.isClosest);
-		if (closest && (closest.shade === 0 || closest.shade === 1000)) {
-			return closest.shade;
-		}
-		return null;
-	});
+	const createHiddenClosestEdgeShade = (index: number) =>
+		createMemo(() => {
+			if (showEdgeShades()) return null;
+			const closest = colors()[index].palette.find((item) => item.isClosest);
+			if (closest && (closest.shade === 0 || closest.shade === 1000)) {
+				return closest.shade;
+			}
+			return null;
+		});
 
-	const needsStrongCorrection = createMemo(() => {
-		const closest = color().palette.find((item) => item.isClosest);
-		return closest?.needsStrongCorrection ?? false;
-	});
+	const createNeedsStrongCorrection = (index: number) =>
+		createMemo(() => {
+			const closest = colors()[index].palette.find((item) => item.isClosest);
+			return closest?.needsStrongCorrection ?? false;
+		});
+
+	const getColorName = (color: ColorState) => color.name.trim() || color.input;
 
 	const cssOutput = createMemo(() => {
-		const colorName = color().name.trim() || "primary";
-		return color()
-			.palette.filter((item) => item.shade !== 0 && item.shade !== 1000)
-			.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
-			.join("\n");
+		return colors()
+			.map((c) => {
+				const colorName = getColorName(c).replace("#", "");
+				return c.palette
+					.filter((item) => item.shade !== 0 && item.shade !== 1000)
+					.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
+					.join("\n");
+			})
+			.join("\n\n");
 	});
 
 	const copyToClipboard = () => {
 		navigator.clipboard.writeText(cssOutput());
 	};
 
+	const handleOnClickSettingsButton = () => {
+		setIsSettingsOpen(!isSettingsOpen());
+	};
+
+	const handleAddPalette = () => {
+		setColors([
+			...colors(),
+			{
+				name: "primary",
+				input: "#3b82f6",
+				palette: generatePaletteFromHex("#3b82f6"),
+			},
+		]);
+	};
+
+	const handleDeletePalette = (index: number) => {
+		if (colors().length === 1) {
+			throw new Error("Cannot delete the last palette");
+		}
+		const name = getColorName(colors()[index]);
+		if (confirm(`Are you sure you want to delete "${name}"?`)) {
+			setColors(colors().filter((_, i) => i !== index));
+		}
+	};
+
+	const handleDragStart = (index: number) => {
+		setDraggedIndex(index);
+	};
+
+	const handleDragEnd = () => {
+		setDraggedIndex(null);
+		setDropTargetIndex(null);
+	};
+
+	const handleDragOver = (e: DragEvent, index: number) => {
+		e.preventDefault();
+		const dragged = draggedIndex();
+		if (dragged === null || dragged === index) {
+			setDropTargetIndex(null);
+			return;
+		}
+		setDropTargetIndex(index);
+	};
+
+	const handleDrop = (e: DragEvent, targetIndex: number) => {
+		e.preventDefault();
+		const dragged = draggedIndex();
+		if (dragged === null || dragged === targetIndex) {
+			return;
+		}
+
+		const newColors = [...colors()];
+		const [removed] = newColors.splice(dragged, 1);
+		newColors.splice(targetIndex, 0, removed);
+		setColors(newColors);
+
+		setDraggedIndex(null);
+		setDropTargetIndex(null);
+	};
+
 	return (
-		<main class="text-center mx-auto text-gray-700 dark:text-gray-300 h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
-			<div class="relative">
-				<h1 class="max-6-xs text-2xl text-sky-700 dark:text-sky-400 font-thin uppercase my-3 px-4">
-					Indexed Palette Builder
-				</h1>
+		<div class="flex justify-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
+			<main class="text-center h-full flex flex-col max-w-7xl w-full">
+				<Header
+					settingsContainerRef={(el) => {
+						settingsContainerRef = el;
+					}}
+					isSettingsOpen={isSettingsOpen}
+					setIsSettingsOpen={setIsSettingsOpen}
+					onClickSettingsButton={handleOnClickSettingsButton}
+					theme={theme}
+					applyTheme={applyTheme}
+					showEdgeShades={showEdgeShades}
+					setShowEdgeShades={setShowEdgeShades}
+					isEditMode={isEditMode}
+					onClickEditButton={() => setIsEditMode(!isEditMode())}
+				/>
 
-				<div
-					class="absolute top-1/2 -translate-y-1/2 right-4"
-					ref={settingsContainerRef}
-				>
-					<button
-						type="button"
-						onClick={() => setIsSettingsOpen(!isSettingsOpen())}
-						class="p-2 text-gray-600 dark:text-gray-400 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-						aria-label="Settings"
-					>
-						<Settings size={20} />
-					</button>
-
-					<SettingsPopup
-						isOpen={isSettingsOpen}
-						setIsOpen={setIsSettingsOpen}
-						theme={theme}
-						applyTheme={applyTheme}
-						showEdgeShades={showEdgeShades}
-						setShowEdgeShades={setShowEdgeShades}
-					/>
-				</div>
-			</div>
-
-			<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 max-w-7xl w-full mx-auto flex-1 min-h-0 px-4 pb-4">
-				{/* Left Column: Palette Builder */}
-				<div class="flex flex-col gap-3 min-h-0">
-					<div class="flex gap-3 items-center min-w-0">
-						{/* Input fields on the left */}
-						<div class="flex-shrink-0 w-36 space-y-2">
-							<div>
-								<label
-									for="name-input"
-									class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-								>
-									Color Name
-								</label>
-								<input
-									id="name-input"
-									type="text"
-									value={color().name}
-									onInput={(e) =>
-										setColor({ ...color(), name: e.target.value })
-									}
-									class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-									placeholder="primary"
-								/>
-							</div>
-
-							<div>
-								<label
-									for="color-input"
-									class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-								>
-									Hex Color
-								</label>
-								<input
-									id="color-input"
-									type="text"
-									value={color().input}
-									onInput={handleInput}
-									class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-									placeholder="#000000"
-								/>
-							</div>
-						</div>
-
-						{/* Color squares arranged horizontally */}
-						<div class="flex-1 flex flex-col items-center min-w-0">
-							<div
-								class="w-full grid gap-[1%]"
-								style={{
-									"grid-template-columns": `repeat(${gridColumns()}, 1fr)`,
-								}}
-							>
-								{displayedPalette().map((item) => (
-									<div class="flex flex-col items-center gap-1">
+				<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
+					{/* Left Column: Palette Builder */}
+					<div class="flex flex-col gap-3 min-h-0 overflow-y-auto">
+						<Index each={colors()}>
+							{(_, index) => {
+								const displayedPalette = createDisplayedPalette(index);
+								const gridColumns = createGridColumns(displayedPalette);
+								const showDropBefore = createMemo(() => {
+									const dragged = draggedIndex();
+									const dropTarget = dropTargetIndex();
+									return (
+										dropTarget === index && dragged !== null && dragged > index
+									);
+								});
+								const showDropAfter = createMemo(() => {
+									const dragged = draggedIndex();
+									const dropTarget = dropTargetIndex();
+									return (
+										dropTarget === index && dragged !== null && dragged < index
+									);
+								});
+								return (
+									// biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop requires these handlers
+									<div
+										onDragOver={(e) => handleDragOver(e, index)}
+										onDrop={(e) => handleDrop(e, index)}
+									>
 										<div
-											class="aspect-square rounded transition-all w-full"
-											style={{ "background-color": item.hex }}
-											title={`${item.shade}: ${item.hex}`}
+											class={`h-1 rounded-full transition-colors ${showDropBefore() ? "bg-sky-500" : "bg-transparent"}`}
 										/>
-										{item.isClosest && (
-											<div class="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
-										)}
+										{/* biome-ignore lint/a11y/noStaticElementInteractions: draggable element */}
+										<div
+											class={`flex items-center gap-4 ${draggedIndex() === index ? "opacity-30" : ""}`}
+											draggable={isEditMode()}
+											onDragStart={() => handleDragStart(index)}
+											onDragEnd={handleDragEnd}
+										>
+											<Show when={isEditMode()}>
+												<span
+													class="text-gray-500 dark:text-gray-400 cursor-grab active:cursor-grabbing"
+													role="img"
+													aria-label="Reorder"
+												>
+													<GripVertical size={20} />
+												</span>
+											</Show>
+											<div class="flex-1">
+												<ColorPalette
+													color={getColor(index)}
+													setColor={setColorAt(index)}
+													handleInput={createHandleInput(index)}
+													gridColumns={gridColumns}
+													displayedPalette={displayedPalette}
+													hiddenClosestEdgeShade={createHiddenClosestEdgeShade(
+														index,
+													)}
+													needsStrongCorrection={createNeedsStrongCorrection(
+														index,
+													)}
+													isEditMode={isEditMode}
+												/>
+											</div>
+											<Show when={isEditMode()}>
+												<button
+													type="button"
+													onClick={() => handleDeletePalette(index)}
+													disabled={colors().length === 1}
+													class="p-2 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100 dark:active:bg-red-900 rounded-lg transition-colors disabled:text-gray-300 dark:disabled:text-gray-600 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+													aria-label="Delete"
+												>
+													<Trash2 size={20} />
+												</button>
+											</Show>
+										</div>
+										<div
+											class={`h-1 rounded-full transition-colors ${showDropAfter() ? "bg-sky-500" : "bg-transparent"}`}
+										/>
 									</div>
-								))}
-							</div>
-
-							{/* Reserved area for warning messages */}
-							<div class="text-sm text-gray-600 dark:text-gray-400 mt-2 h-5">
-								<Show when={hiddenClosestEdgeShade() !== null}>
-									Closest to edge shade {hiddenClosestEdgeShade()}
-								</Show>
-								<Show when={needsStrongCorrection()}>
-									This color does not look like Tailwind, so strong correction
-									is being applied
-								</Show>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				{/* Right Column: CSS Export */}
-				<div class="flex flex-col min-h-0">
-					<div class="flex justify-between items-center mb-2">
-						<label
-							for="css-output"
-							class="block text-xs font-medium text-gray-700 dark:text-gray-300"
-						>
-							CSS Variables
-						</label>
+								);
+							}}
+						</Index>
 						<button
 							type="button"
-							onClick={copyToClipboard}
-							class="px-2 py-1 text-xs bg-sky-600 dark:bg-sky-700 text-white rounded hover:bg-sky-700 dark:hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+							onClick={handleAddPalette}
+							class="w-full flex flex-col items-center gap-1 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors"
 						>
-							Copy CSS
+							<Plus size={20} />
+							<span class="text-sm">Add Palette</span>
 						</button>
 					</div>
-					<textarea
-						id="css-output"
-						readonly
-						textContent={cssOutput()}
-						class="w-full flex-1 min-h-0 p-3 font-mono text-xs border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-					/>
+
+					{/* Right Column: CSS Export */}
+					<div class="flex flex-col min-h-0 gap-2">
+						<div class="flex justify-between items-center">
+							<label
+								for="css-output"
+								class="block text-xs font-medium text-gray-700 dark:text-gray-300"
+							>
+								CSS Variables
+							</label>
+							<button
+								type="button"
+								onClick={copyToClipboard}
+								class="px-2 py-1 text-xs bg-sky-600 dark:bg-sky-700 text-white rounded hover:bg-sky-700 dark:hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+							>
+								Copy CSS
+							</button>
+						</div>
+						<textarea
+							id="css-output"
+							readonly
+							textContent={cssOutput()}
+							class="w-full flex-1 min-h-0 p-3 font-mono text-xs border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+						/>
+						　
+					</div>
 				</div>
-			</div>
-		</main>
+			</main>
+		</div>
 	);
 }

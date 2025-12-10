@@ -16,6 +16,7 @@
 		"@types/culori": "4.0.1",
 		"@types/node": "24.10.1",
 		"@typescript/native-preview": "7.0.0-dev.20251129.1",
+		"fast-glob": "3.3.3",
 		"tailwindcss": "4.1.17",
 		"vitest": "4.0.15"
 	},
@@ -27,8 +28,9 @@
 		"build": "vinxi build",
 		"dev": "vinxi dev",
 		"start": "vinxi start",
-		"check": "npm run check:types && npm run check:lint && npm run test",
+		"check": "npm run check:types && npm run check:lint && npm run check:no-margin && npm run test",
 		"check:lint": "biome check .",
+		"check:no-margin": "npx tsx scripts/no-margin.ts",
 		"check:types": "tsgo",
 		"fix": "biome check --write . --unsafe",
 		"test": "npm run test:watch -- --run",
