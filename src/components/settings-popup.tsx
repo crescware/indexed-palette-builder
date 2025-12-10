@@ -2,6 +2,7 @@ import { X } from "lucide-solid";
 import type { Accessor, Setter } from "solid-js";
 import { Show } from "solid-js";
 
+import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 
 type Props = Readonly<{
@@ -9,11 +10,16 @@ type Props = Readonly<{
 	setIsOpen: Setter<boolean>;
 	theme: Accessor<Theme>;
 	applyTheme: (theme: Theme) => void;
-	showEdgeShades: Accessor<boolean>;
+	showEdgeShades: Accessor<ShowEdgeShadesState>;
 	onChangeShowEdgeShades: (value: boolean) => void;
 }>;
 
 export function SettingsPopup(props: Props) {
+	const isShowEdgeShadesChecked = () => {
+		const state = props.showEdgeShades();
+		return !state.isLoading && state.value;
+	};
+
 	return (
 		<Show when={props.isOpen()}>
 			<div class="absolute top-[calc(100%+0.5rem)] right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 w-64 z-50 flex flex-col gap-3">
@@ -81,11 +87,12 @@ export function SettingsPopup(props: Props) {
 						<label class="flex items-center gap-2 cursor-pointer">
 							<input
 								type="checkbox"
-								checked={props.showEdgeShades()}
+								checked={isShowEdgeShadesChecked()}
+								disabled={props.showEdgeShades().isLoading}
 								onInput={(e) =>
 									props.onChangeShowEdgeShades(e.currentTarget.checked)
 								}
-								class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 rounded focus:ring-sky-500"
+								class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 rounded focus:ring-sky-500 disabled:opacity-50"
 							/>
 							<span class="text-sm text-gray-700 dark:text-gray-300">
 								Show edge shades (0/1000)
