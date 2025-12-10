@@ -25,18 +25,45 @@ const defaultShowEdgeShades = {
 	value: false,
 } as const satisfies ShowEdgeShadesState;
 
+type StoredPalette = { name: string; input: string };
+
+const defaultPalettes: readonly StoredPalette[] = [
+	{ name: "primary", input: "#3b82f6" },
+];
+
+const palettesToColorStates = (
+	palettes: readonly StoredPalette[],
+): readonly ColorState[] =>
+	palettes.map((p) => ({
+		name: p.name,
+		input: p.input,
+		palette: generatePaletteFromHex(p.input),
+	}));
+
+const colorStatesToStoredPalettes = (
+	colors: readonly ColorState[],
+): readonly StoredPalette[] =>
+	colors.map((c) => ({ name: c.name, input: c.input }));
+
 export default function Home() {
-	const [colors, setColors] = createSignal<readonly ColorState[]>([
-		{
-			name: "primary",
-			input: "#3b82f6", // Default to blue-500
-			palette: generatePaletteFromHex("#3b82f6"),
-		},
-	]);
+	const [colors, setColors] = createSignal<readonly ColorState[]>(
+		palettesToColorStates(defaultPalettes),
+	);
+
+	const savePalettes = (colorStates: readonly ColorState[]): void => {
+		if (!isServer) {
+			localStorage.setItem(
+				storageKeys.palettes,
+				JSON.stringify(colorStatesToStoredPalettes(colorStates)),
+			);
+		}
+	};
 
 	const getColor = (index: number) => () => colors()[index];
 	const setColorAt = (index: number) => (value: ColorState) => {
-		setColors(colors().map((c, i) => (i === index ? value : c)));
+		const newColors = colors().map((c, i) => (i === index ? value : c));
+		setColors(newColors);
+		savePalettes(newColors);
 	};
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
@@ -65,7 +92,7 @@ export default function Home() {
 			return;
 		}
 
-		if (!confirm("Are you sure you want to reset all settings to defaults?")) {
+		if (!confirm("Are you sure you want to reset all data? This will delete all palettes and settings. This action cannot be undone.")) {
 			return;
 		}
 
@@ -82,6 +109,7 @@ export default function Home() {
 
 		applyTheme(defaultTheme);
 		setShowEdgeShades(defaultShowEdgeShades);
+		setColors(palettesToColorStates(defaultPalettes));
 	};
 
 	const applyTheme = (newTheme: Theme) => {
@@ -132,6 +160,14 @@ export default function Home() {
 					? JSON.parse(savedShowEdgeShades)
 					: defaultShowEdgeShades.value,
 		});
+
+		const savedPalettes = localStorage.getItem(storageKeys.palettes);
+		if (savedPalettes !== null) {
+			const parsed = JSON.parse(savedPalettes) as StoredPalette[];
+			if (parsed.length > 0) {
+				setColors(palettesToColorStates(parsed));
+			}
+		}
 
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
@@ -218,14 +254,16 @@ export default function Home() {
 	};
 
 	const handleAddPalette = () => {
-		setColors([
+		const newColors = [
 			...colors(),
 			{
 				name: "primary",
 				input: "#3b82f6",
 				palette: generatePaletteFromHex("#3b82f6"),
 			},
-		]);
+		];
+		setColors(newColors);
+		savePalettes(newColors);
 	};
 
 	const handleDeletePalette = (index: number) => {
@@ -234,7 +272,9 @@ export default function Home() {
 		}
 		const name = getColorName(colors()[index]);
 		if (confirm(`Are you sure you want to delete "${name}"?`)) {
-			setColors(colors().filter((_, i) => i !== index));
+			const newColors = colors().filter((_, i) => i !== index);
+			setColors(newColors);
+			savePalettes(newColors);
 		}
 	};
 
@@ -268,6 +308,7 @@ export default function Home() {
 		const [removed] = newColors.splice(dragged, 1);
 		newColors.splice(targetIndex, 0, removed);
 		setColors(newColors);
+		savePalettes(newColors);
 
 		setDraggedIndex(null);
 		setDropTargetIndex(null);
