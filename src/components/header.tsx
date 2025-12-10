@@ -17,7 +17,7 @@ type Props = Readonly<{
 		| "applyTheme"
 		| "showEdgeShades"
 		| "onChangeShowEdgeShades"
-		| "onDiscardSettings"
+		| "onResetSettings"
 	>;
 
 export function Header(props: Props) {
@@ -54,7 +54,7 @@ export function Header(props: Props) {
 					applyTheme={props.applyTheme}
 					showEdgeShades={props.showEdgeShades}
 					onChangeShowEdgeShades={props.onChangeShowEdgeShades}
-					onDiscardSettings={props.onDiscardSettings}
+					onResetSettings={props.onResetSettings}
 				/>
 			</div>
 		</header>

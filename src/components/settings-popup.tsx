@@ -12,7 +12,7 @@ type Props = Readonly<{
 	applyTheme: (theme: Theme) => void;
 	showEdgeShades: Accessor<ShowEdgeShadesState>;
 	onChangeShowEdgeShades: (value: boolean) => void;
-	onDiscardSettings: () => void;
+	onResetSettings: () => void;
 }>;
 
 export function SettingsPopup(props: Props) {
@@ -103,10 +103,10 @@ export function SettingsPopup(props: Props) {
 				</div>
 				<button
 					type="button"
-					onClick={props.onDiscardSettings}
+					onClick={props.onResetSettings}
 					class="w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg transition-colors"
 				>
-					Discard settings
+					Reset to defaults
 				</button>
 			</div>
 		</Show>

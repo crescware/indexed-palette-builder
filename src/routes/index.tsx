@@ -60,8 +60,12 @@ export default function Home() {
 		}
 	};
 
-	const handleDiscardSettings = (): void => {
+	const handleResetSettings = (): void => {
 		if (isServer) {
+			return;
+		}
+
+		if (!confirm("Are you sure you want to reset all settings to defaults?")) {
 			return;
 		}
 
@@ -293,7 +297,7 @@ export default function Home() {
 						applyTheme={applyTheme}
 						showEdgeShades={showEdgeShades}
 						onChangeShowEdgeShades={handleChangeShowEdgeShades}
-						onDiscardSettings={handleDiscardSettings}
+						onResetSettings={handleResetSettings}
 						isEditMode={isEditMode}
 						onClickEditButton={() => setIsEditMode(!isEditMode())}
 					/>
