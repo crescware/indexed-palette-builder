@@ -10,7 +10,7 @@ type Props = Readonly<{
 	theme: Accessor<Theme>;
 	applyTheme: (theme: Theme) => void;
 	showEdgeShades: Accessor<boolean>;
-	setShowEdgeShades: Setter<boolean>;
+	onChangeShowEdgeShades: (value: boolean) => void;
 }>;
 
 export function SettingsPopup(props: Props) {
@@ -83,7 +83,7 @@ export function SettingsPopup(props: Props) {
 								type="checkbox"
 								checked={props.showEdgeShades()}
 								onInput={(e) =>
-									props.setShowEdgeShades(e.currentTarget.checked)
+									props.onChangeShowEdgeShades(e.currentTarget.checked)
 								}
 								class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 rounded focus:ring-sky-500"
 							/>

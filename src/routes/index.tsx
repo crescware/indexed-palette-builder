@@ -11,6 +11,7 @@ import { isServer } from "solid-js/web";
 
 import { ColorPalette } from "../components/color-palette";
 import { Header } from "../components/header";
+import { storageKeys } from "../constants/storage";
 import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import type { Theme } from "../models/theme";
@@ -40,6 +41,13 @@ export default function Home() {
 	);
 	let settingsContainerRef: HTMLDivElement | undefined;
 
+	const handleChangeShowEdgeShades = (value: boolean) => {
+		setShowEdgeShades(value);
+		if (!isServer) {
+			localStorage.setItem(storageKeys.showEdgeShades, JSON.stringify(value));
+		}
+	};
+
 	const applyTheme = (newTheme: Theme) => {
 		if (isServer) {
 			return;
@@ -61,10 +69,22 @@ export default function Home() {
 		}
 
 		setTheme(newTheme);
+		localStorage.setItem(storageKeys.theme, newTheme);
 	};
 
 	onMount(() => {
-		applyTheme(theme());
+		// Load settings from localStorage
+		const savedTheme = localStorage.getItem(storageKeys.theme) as Theme | null;
+		if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+			applyTheme(savedTheme);
+		} else {
+			applyTheme(theme());
+		}
+
+		const savedShowEdgeShades = localStorage.getItem(storageKeys.showEdgeShades);
+		if (savedShowEdgeShades !== null) {
+			setShowEdgeShades(JSON.parse(savedShowEdgeShades));
+		}
 
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
@@ -217,7 +237,7 @@ export default function Home() {
 					theme={theme}
 					applyTheme={applyTheme}
 					showEdgeShades={showEdgeShades}
-					setShowEdgeShades={setShowEdgeShades}
+					onChangeShowEdgeShades={handleChangeShowEdgeShades}
 					isEditMode={isEditMode}
 					onClickEditButton={() => setIsEditMode(!isEditMode())}
 				/>

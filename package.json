@@ -18,6 +18,7 @@
 		"@typescript/native-preview": "7.0.0-dev.20251129.1",
 		"fast-glob": "3.3.3",
 		"tailwindcss": "4.1.17",
+		"tsdown": "0.17.2",
 		"vitest": "4.0.15"
 	},
 	"engines": {
@@ -25,8 +26,9 @@
 		"npm": "11.6.2"
 	},
 	"scripts": {
-		"build": "vinxi build",
-		"dev": "vinxi dev",
+		"build": "npm run build:scripts && vinxi build",
+		"build:scripts": "tsdown",
+		"dev": "npm run build:scripts && vinxi dev",
 		"start": "vinxi start",
 		"check": "npm run check:types && npm run check:lint && npm run check:no-margin && npm run test",
 		"check:lint": "biome check .",
