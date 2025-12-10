@@ -12,6 +12,7 @@ type Props = Readonly<{
 	applyTheme: (theme: Theme) => void;
 	showEdgeShades: Accessor<ShowEdgeShadesState>;
 	onChangeShowEdgeShades: (value: boolean) => void;
+	onDiscardSettings: () => void;
 }>;
 
 export function SettingsPopup(props: Props) {
@@ -100,6 +101,13 @@ export function SettingsPopup(props: Props) {
 						</label>
 					</div>
 				</div>
+				<button
+					type="button"
+					onClick={props.onDiscardSettings}
+					class="w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg transition-colors"
+				>
+					Discard settings
+				</button>
 			</div>
 		</Show>
 	);

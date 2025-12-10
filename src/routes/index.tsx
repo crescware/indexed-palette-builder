@@ -11,12 +11,19 @@ import { isServer } from "solid-js/web";
 
 import { ColorPalette } from "../components/color-palette";
 import { Header } from "../components/header";
-import { storageKeys } from "../constants/storage";
+import { storageKeys, storagePrefix } from "../constants/storage";
 import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
+
+const defaultTheme = "system" as const satisfies Theme;
+
+const defaultShowEdgeShades = {
+	isLoading: false,
+	value: false,
+} as const satisfies ShowEdgeShadesState;
 
 export default function Home() {
 	const [colors, setColors] = createSignal<readonly ColorState[]>([
@@ -33,10 +40,12 @@ export default function Home() {
 	};
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
-	const [theme, setTheme] = createSignal<Theme>("system");
+	const [theme, setTheme] = createSignal<Theme>(defaultTheme);
+
 	const [showEdgeShades, setShowEdgeShades] = createSignal<ShowEdgeShadesState>(
 		{ isLoading: true },
 	);
+
 	const [isEditMode, setIsEditMode] = createSignal(false);
 	const [draggedIndex, setDraggedIndex] = createSignal<number | null>(null);
 	const [dropTargetIndex, setDropTargetIndex] = createSignal<number | null>(
@@ -44,11 +53,31 @@ export default function Home() {
 	);
 	let settingsContainerRef: HTMLDivElement | undefined;
 
-	const handleChangeShowEdgeShades = (value: boolean) => {
+	const handleChangeShowEdgeShades = (value: boolean): void => {
 		setShowEdgeShades({ isLoading: false, value });
 		if (!isServer) {
 			localStorage.setItem(storageKeys.showEdgeShades, JSON.stringify(value));
 		}
+	};
+
+	const handleDiscardSettings = (): void => {
+		if (isServer) {
+			return;
+		}
+
+		const keysToRemove: string[] = [];
+		for (let i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key?.startsWith(storagePrefix)) {
+				keysToRemove.push(key);
+			}
+		}
+		for (const key of keysToRemove) {
+			localStorage.removeItem(key);
+		}
+
+		applyTheme(defaultTheme);
+		setShowEdgeShades(defaultShowEdgeShades);
 	};
 
 	const applyTheme = (newTheme: Theme) => {
@@ -91,10 +120,13 @@ export default function Home() {
 		const savedShowEdgeShades = localStorage.getItem(
 			storageKeys.showEdgeShades,
 		);
+
 		setShowEdgeShades({
 			isLoading: false,
 			value:
-				savedShowEdgeShades !== null ? JSON.parse(savedShowEdgeShades) : false,
+				savedShowEdgeShades !== null
+					? JSON.parse(savedShowEdgeShades)
+					: defaultShowEdgeShades.value,
 		});
 
 		const handleClickOutside = (event: MouseEvent) => {
@@ -261,6 +293,7 @@ export default function Home() {
 						applyTheme={applyTheme}
 						showEdgeShades={showEdgeShades}
 						onChangeShowEdgeShades={handleChangeShowEdgeShades}
+						onDiscardSettings={handleDiscardSettings}
 						isEditMode={isEditMode}
 						onClickEditButton={() => setIsEditMode(!isEditMode())}
 					/>

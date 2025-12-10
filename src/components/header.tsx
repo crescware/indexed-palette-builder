@@ -13,7 +13,11 @@ type Props = Readonly<{
 }> &
 	Pick<
 		ComponentProps<typeof SettingsPopup>,
-		"theme" | "applyTheme" | "showEdgeShades" | "onChangeShowEdgeShades"
+		| "theme"
+		| "applyTheme"
+		| "showEdgeShades"
+		| "onChangeShowEdgeShades"
+		| "onDiscardSettings"
 	>;
 
 export function Header(props: Props) {
@@ -50,6 +54,7 @@ export function Header(props: Props) {
 					applyTheme={props.applyTheme}
 					showEdgeShades={props.showEdgeShades}
 					onChangeShowEdgeShades={props.onChangeShowEdgeShades}
+					onDiscardSettings={props.onDiscardSettings}
 				/>
 			</div>
 		</header>
