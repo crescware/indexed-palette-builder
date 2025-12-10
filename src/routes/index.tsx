@@ -110,6 +110,7 @@ export default function Home() {
 		applyTheme(defaultTheme);
 		setShowEdgeShades(defaultShowEdgeShades);
 		setColors(palettesToColorStates(defaultPalettes));
+		setIsSettingsOpen(false);
 	};
 
 	const applyTheme = (newTheme: Theme) => {
