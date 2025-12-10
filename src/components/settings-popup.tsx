@@ -104,7 +104,7 @@ export function SettingsPopup(props: Props) {
 				<button
 					type="button"
 					onClick={props.onResetSettings}
-					class="w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg transition-colors"
+					class="w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 border border-red-600 dark:border-red-400 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100 dark:active:bg-red-900 rounded-md transition-colors"
 				>
 					Reset to defaults
 				</button>
