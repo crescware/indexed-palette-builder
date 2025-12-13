@@ -10,12 +10,13 @@ import {
 import { isServer } from "solid-js/web";
 
 import { ColorPalette } from "../components/color-palette";
+import { CssExport } from "../components/css-export";
 import { Header } from "../components/header";
 import { storageKeys, storagePrefix } from "../constants/storage";
 import { useColors } from "../contexts/colors/use-colors";
-import type { ColorState } from "../models/color/color-state";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import { extractHue } from "../models/color/create-random-color-state/extract-hue";
+import { getColorName } from "../models/color/get-color-name";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 
@@ -186,24 +187,6 @@ export default function Home() {
 			const closest = getColor(index).palette.find((item) => item.isClosest);
 			return closest?.needsStrongCorrection ?? false;
 		});
-
-	const getColorName = (color: ColorState) => color.name.trim() || color.input;
-
-	const cssOutput = createMemo(() => {
-		return colors()
-			.map((c) => {
-				const colorName = getColorName(c).replace("#", "");
-				return c.palette
-					.filter((item) => item.shade !== 0 && item.shade !== 1000)
-					.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
-					.join("\n");
-			})
-			.join("\n\n");
-	});
-
-	const copyToClipboard = () => {
-		navigator.clipboard.writeText(cssOutput());
-	};
 
 	const handleOnClickSettingsButton = () => {
 		setIsSettingsOpen(!isSettingsOpen());
@@ -418,30 +401,7 @@ export default function Home() {
 							</button>
 						</div>
 
-						{/* Right Column: CSS Export */}
-						<div class="flex flex-col min-h-0 gap-2">
-							<div class="flex justify-between items-center">
-								<label
-									for="css-output"
-									class="block text-xs font-medium text-gray-700 dark:text-gray-300"
-								>
-									CSS Variables
-								</label>
-								<button
-									type="button"
-									onClick={copyToClipboard}
-									class="px-2 py-1 text-xs bg-sky-600 dark:bg-sky-700 text-white rounded hover:bg-sky-700 dark:hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
-								>
-									Copy CSS
-								</button>
-							</div>
-							<textarea
-								id="css-output"
-								readonly
-								textContent={cssOutput()}
-								class="w-full flex-1 min-h-0 p-3 font-mono text-xs border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-							/>
-						</div>
+						<CssExport />
 					</div>
 				</main>
 			</Show>
