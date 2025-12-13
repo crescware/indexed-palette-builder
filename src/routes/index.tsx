@@ -12,6 +12,7 @@ import { isServer } from "solid-js/web";
 import { ColorPalette } from "../components/color-palette";
 import { Header } from "../components/header";
 import { storageKeys, storagePrefix } from "../constants/storage";
+import { useColors } from "../contexts/colors/use-colors";
 import type { ColorState } from "../models/color/color-state";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import { extractHue } from "../models/color/create-random-color-state/extract-hue";
@@ -50,9 +51,7 @@ const colorStatesToStoredPalettes = (
 	colors.map((c) => ({ name: c.name, input: c.input }));
 
 export default function Home() {
-	const [colors, setColors] = createSignal<readonly ColorState[]>([
-		createRandomColorState(),
-	]);
+	const { colors, setColors } = useColors();
 
 	const savePalettes = (colorStates: readonly ColorState[]): void => {
 		if (!isServer) {
