@@ -1,17 +1,10 @@
-import { GripVertical, Loader2, Plus, Trash2 } from "lucide-solid";
-import {
-	createMemo,
-	createSignal,
-	Index,
-	onCleanup,
-	onMount,
-	Show,
-} from "solid-js";
+import { Loader2, Plus } from "lucide-solid";
+import { createSignal, Index, onCleanup, onMount, Show } from "solid-js";
 import { isServer } from "solid-js/web";
 
-import { ColorPalette } from "../components/color-palette";
 import { CssExport } from "../components/css-export";
 import { Header } from "../components/header";
+import { PaletteRow } from "../components/palette-row";
 import { storageKeys, storagePrefix } from "../constants/storage";
 import { useColors } from "../contexts/colors/use-colors";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
@@ -28,15 +21,8 @@ const defaultShowEdgeShades = {
 } as const satisfies ShowEdgeShadesState;
 
 export default function Home() {
-	const {
-		colors,
-		setColors,
-		savePalettes,
-		loadPalettes,
-		getColor,
-		setColorNameAt,
-		setColorValueAt,
-	} = useColors();
+	const { colors, setColors, savePalettes, loadPalettes, getColor } =
+		useColors();
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
 	const [theme, setTheme] = createSignal<Theme>(defaultTheme);
@@ -158,36 +144,6 @@ export default function Home() {
 		});
 	});
 
-	const createDisplayedPalette = (index: number) =>
-		createMemo(() => {
-			const palette = getColor(index).palette;
-			const state = showEdgeShades();
-			if (state.isLoading || state.value) {
-				return palette;
-			}
-			return palette.filter((item) => item.shade !== 0 && item.shade !== 1000);
-		});
-
-	const createGridColumns = (displayedPalette: () => readonly unknown[]) =>
-		createMemo(() => displayedPalette().length);
-
-	const createHiddenClosestEdgeShade = (index: number) =>
-		createMemo(() => {
-			const state = showEdgeShades();
-			if (state.isLoading || state.value) return null;
-			const closest = getColor(index).palette.find((item) => item.isClosest);
-			if (closest && (closest.shade === 0 || closest.shade === 1000)) {
-				return closest.shade;
-			}
-			return null;
-		});
-
-	const createNeedsStrongCorrection = (index: number) =>
-		createMemo(() => {
-			const closest = getColor(index).palette.find((item) => item.isClosest);
-			return closest?.needsStrongCorrection ?? false;
-		});
-
 	const handleOnClickSettingsButton = () => {
 		setIsSettingsOpen(!isSettingsOpen());
 	};
@@ -308,88 +264,21 @@ export default function Home() {
 							class="flex flex-col gap-3 min-h-0 overflow-y-auto px-1"
 						>
 							<Index each={colors()}>
-								{(_, index) => {
-									const displayedPalette = createDisplayedPalette(index);
-									const gridColumns = createGridColumns(displayedPalette);
-									const showDropBefore = createMemo(() => {
-										const dragged = draggedIndex();
-										const dropTarget = dropTargetIndex();
-										return (
-											dropTarget === index &&
-											dragged !== null &&
-											dragged > index
-										);
-									});
-									const showDropAfter = createMemo(() => {
-										const dragged = draggedIndex();
-										const dropTarget = dropTargetIndex();
-										return (
-											dropTarget === index &&
-											dragged !== null &&
-											dragged < index
-										);
-									});
-									return (
-										// biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop requires these handlers
-										<div
-											onDragOver={(e) => handleDragOver(e, index)}
-											onDrop={(e) => handleDrop(e, index)}
-										>
-											<div
-												class={`h-1 rounded-full transition-colors ${showDropBefore() ? "bg-sky-500" : "bg-transparent"}`}
-											/>
-											{/* biome-ignore lint/a11y/noStaticElementInteractions: draggable element */}
-											<div
-												class={`flex items-center gap-4 ${draggedIndex() === index ? "opacity-30" : ""}`}
-												draggable={isEditMode()}
-												onDragStart={() => handleDragStart(index)}
-												onDragEnd={handleDragEnd}
-											>
-												<Show when={isEditMode()}>
-													<span
-														class="text-gray-500 dark:text-gray-400 cursor-grab active:cursor-grabbing"
-														role="img"
-														aria-label="Reorder"
-													>
-														<GripVertical size={20} />
-													</span>
-												</Show>
-												<div class="flex-1">
-													<ColorPalette
-														color={() => getColor(index)}
-														onChangeName={(name) => setColorNameAt(index, name)}
-														onChangeInput={(value) =>
-															setColorValueAt(index, value)
-														}
-														gridColumns={gridColumns}
-														displayedPalette={displayedPalette}
-														hiddenClosestEdgeShade={createHiddenClosestEdgeShade(
-															index,
-														)}
-														needsStrongCorrection={createNeedsStrongCorrection(
-															index,
-														)}
-														isEditMode={isEditMode}
-													/>
-												</div>
-												<Show when={isEditMode()}>
-													<button
-														type="button"
-														onClick={() => handleDeletePalette(index)}
-														disabled={colors().length === 1}
-														class="p-2 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100 dark:active:bg-red-900 rounded-lg transition-colors disabled:text-gray-300 dark:disabled:text-gray-600 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-														aria-label="Delete"
-													>
-														<Trash2 size={20} />
-													</button>
-												</Show>
-											</div>
-											<div
-												class={`h-1 rounded-full transition-colors ${showDropAfter() ? "bg-sky-500" : "bg-transparent"}`}
-											/>
-										</div>
-									);
-								}}
+								{(_, index) => (
+									<PaletteRow
+										index={index}
+										draggedIndex={draggedIndex}
+										dropTargetIndex={dropTargetIndex}
+										isEditMode={isEditMode}
+										showEdgeShades={showEdgeShades}
+										colorsLength={() => colors().length}
+										onDragStart={handleDragStart}
+										onDragEnd={handleDragEnd}
+										onDragOver={handleDragOver}
+										onDrop={handleDrop}
+										onDelete={handleDeletePalette}
+									/>
+								)}
 							</Index>
 							<button
 								type="button"
