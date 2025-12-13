@@ -16,6 +16,7 @@ const defaultShowEdgeShades = {
 
 export type ShowEdgeShadesContextValue = Readonly<{
 	showEdgeShades: Accessor<ShowEdgeShadesState>;
+	isLoading: Accessor<boolean>;
 	setShowEdgeShades: (value: boolean) => void;
 	resetShowEdgeShades: () => void;
 }>;
@@ -38,6 +39,8 @@ export function ShowEdgeShadesProvider(props: ParentProps) {
 		setShowEdgeShadesSignal(defaultShowEdgeShades);
 	};
 
+	const isLoading = () => showEdgeShades().isLoading;
+
 	onMount(() => {
 		const savedShowEdgeShades = localStorage.getItem(
 			storageKeys.showEdgeShades,
@@ -54,7 +57,12 @@ export function ShowEdgeShadesProvider(props: ParentProps) {
 
 	return (
 		<ShowEdgeShadesContext.Provider
-			value={{ showEdgeShades, setShowEdgeShades, resetShowEdgeShades }}
+			value={{
+				showEdgeShades,
+				isLoading,
+				setShowEdgeShades,
+				resetShowEdgeShades,
+			}}
 		>
 			{props.children}
 		</ShowEdgeShadesContext.Provider>

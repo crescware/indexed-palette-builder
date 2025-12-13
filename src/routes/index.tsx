@@ -5,9 +5,7 @@ import { PaletteBuilder } from "../components/palette-builder";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
 
 export default function Home() {
-	const { showEdgeShades } = useShowEdgeShades();
-
-	const isLoading = () => showEdgeShades().isLoading;
+	const { isLoading } = useShowEdgeShades();
 
 	return (
 		<div class="flex justify-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
