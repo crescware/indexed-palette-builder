@@ -6,8 +6,8 @@ import type { PaletteStep } from "../models/color/generate-palette";
 
 type Props = Readonly<{
 	color: Accessor<ColorState>;
-	setColor: (value: ColorState) => void;
-	handleInput: (e: Event) => void;
+	onChangeName: (name: string) => void;
+	onChangeInput: (e: Event) => void;
 	gridColumns: Accessor<number>;
 	displayedPalette: Accessor<readonly PaletteStep[]>;
 	hiddenClosestEdgeShade: Accessor<number | null>;
@@ -31,9 +31,7 @@ export function ColorPalette(props: Props) {
 						id="name-input"
 						type="text"
 						value={props.color().name}
-						onInput={(e) =>
-							props.setColor({ ...props.color(), name: e.target.value })
-						}
+						onInput={(e) => props.onChangeName(e.target.value)}
 						disabled={props.isEditMode()}
 						class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
 						placeholder="primary"
@@ -51,7 +49,7 @@ export function ColorPalette(props: Props) {
 						id="color-input"
 						type="text"
 						value={props.color().input}
-						onInput={props.handleInput}
+						onInput={props.onChangeInput}
 						disabled={props.isEditMode()}
 						class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
 						placeholder="#000000"

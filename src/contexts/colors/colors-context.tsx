@@ -22,8 +22,8 @@ export type ColorsContextValue = Readonly<{
 	colors: Accessor<readonly ColorState[]>;
 	setColors: Setter<readonly ColorState[]>;
 	savePalettes: (colorStates: readonly ColorState[]) => void;
-	getColor: (i: number) => () => ColorState;
-	setColorAt: (i: number) => (given: ColorState) => void;
+	getColor: (i: number) => ColorState;
+	setColorAt: (i: number, given: ColorState) => void;
 }>;
 
 export const ColorsContext = createContext<ColorsContextValue>();
@@ -44,9 +44,9 @@ export function ColorsProvider(props: ParentProps) {
 		);
 	};
 
-	const getColor = (i: number) => () => colors()[i];
+	const getColor = (i: number): ColorState => colors()[i];
 
-	const setColorAt = (i: number) => (given: ColorState) => {
+	const setColorAt = (i: number, given: ColorState): void => {
 		const newColors = colors().map((v, ii) => (ii === i ? given : v));
 		setColors(newColors);
 		savePalettes(newColors);

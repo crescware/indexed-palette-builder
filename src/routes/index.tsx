@@ -174,24 +174,28 @@ export default function Home() {
 		});
 	});
 
-	const createHandleInput = (index: number) => (e: Event) => {
+	const handleChangeName = (index: number, name: string) => {
+		const color = getColor(index);
+		setColorAt(index, { ...color, name });
+	};
+
+	const handleChangeInput = (index: number, e: Event) => {
 		const target = e.target as HTMLInputElement;
 		const value = target.value;
 		const color = getColor(index);
-		const setColor = setColorAt(index);
 		const palette = parseColorToPalette(value);
 
-		setColor({
-			...color(),
+		setColorAt(index, {
+			...color,
 			input: value,
-			palette: palette ?? color().palette,
+			palette: palette ?? color.palette,
 			errorType: palette ? null : "ParseError",
 		});
 	};
 
 	const createDisplayedPalette = (index: number) =>
 		createMemo(() => {
-			const palette = colors()[index].palette;
+			const palette = getColor(index).palette;
 			const state = showEdgeShades();
 			if (state.isLoading || state.value) {
 				return palette;
@@ -206,7 +210,7 @@ export default function Home() {
 		createMemo(() => {
 			const state = showEdgeShades();
 			if (state.isLoading || state.value) return null;
-			const closest = colors()[index].palette.find((item) => item.isClosest);
+			const closest = getColor(index).palette.find((item) => item.isClosest);
 			if (closest && (closest.shade === 0 || closest.shade === 1000)) {
 				return closest.shade;
 			}
@@ -215,7 +219,7 @@ export default function Home() {
 
 	const createNeedsStrongCorrection = (index: number) =>
 		createMemo(() => {
-			const closest = colors()[index].palette.find((item) => item.isClosest);
+			const closest = getColor(index).palette.find((item) => item.isClosest);
 			return closest?.needsStrongCorrection ?? false;
 		});
 
@@ -275,7 +279,7 @@ export default function Home() {
 		if (colors().length === 1) {
 			throw new Error("Cannot delete the last palette");
 		}
-		const name = getColorName(colors()[index]);
+		const name = getColorName(getColor(index));
 		if (confirm(`Are you sure you want to delete "${name}"?`)) {
 			const newColors = colors().filter((_, i) => i !== index);
 			setColors(newColors);
@@ -405,9 +409,11 @@ export default function Home() {
 												</Show>
 												<div class="flex-1">
 													<ColorPalette
-														color={getColor(index)}
-														setColor={setColorAt(index)}
-														handleInput={createHandleInput(index)}
+														color={() => getColor(index)}
+														onChangeName={(name) =>
+															handleChangeName(index, name)
+														}
+														onChangeInput={(e) => handleChangeInput(index, e)}
 														gridColumns={gridColumns}
 														displayedPalette={displayedPalette}
 														hiddenClosestEdgeShade={createHiddenClosestEdgeShade(
