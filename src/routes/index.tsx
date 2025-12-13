@@ -16,7 +16,6 @@ import { useColors } from "../contexts/colors/use-colors";
 import type { ColorState } from "../models/color/color-state";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import { extractHue } from "../models/color/create-random-color-state/extract-hue";
-import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import { parseColorToPalette } from "../models/color/parse-color-to-palette";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
@@ -28,25 +27,15 @@ const defaultShowEdgeShades = {
 	value: false,
 } as const satisfies ShowEdgeShadesState;
 
-type StoredPalette = { name: string; input: string };
-
-const fallbackPalette = generatePaletteFromHex("#f00");
-
-const palettesToColorStates = (
-	palettes: readonly StoredPalette[],
-): readonly ColorState[] =>
-	palettes.map((p) => {
-		const palette = parseColorToPalette(p.input);
-		return {
-			name: p.name,
-			input: p.input,
-			palette: palette ?? fallbackPalette,
-			errorType: palette ? null : "ParseError",
-		};
-	});
-
 export default function Home() {
-	const { colors, setColors, savePalettes, getColor, setColorAt } = useColors();
+	const {
+		colors,
+		setColors,
+		savePalettes,
+		loadPalettes,
+		getColor,
+		setColorAt,
+	} = useColors();
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
 	const [theme, setTheme] = createSignal<Theme>(defaultTheme);
@@ -150,13 +139,7 @@ export default function Home() {
 					: defaultShowEdgeShades.value,
 		});
 
-		const savedPalettes = localStorage.getItem(storageKeys.palettes);
-		if (savedPalettes !== null) {
-			const parsed = JSON.parse(savedPalettes) as StoredPalette[];
-			if (parsed.length > 0) {
-				setColors(palettesToColorStates(parsed));
-			}
-		}
+		loadPalettes();
 
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
