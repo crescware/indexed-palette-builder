@@ -45,29 +45,8 @@ const palettesToColorStates = (
 		};
 	});
 
-const colorStatesToStoredPalettes = (
-	colors: readonly ColorState[],
-): readonly StoredPalette[] =>
-	colors.map((c) => ({ name: c.name, input: c.input }));
-
 export default function Home() {
-	const { colors, setColors } = useColors();
-
-	const savePalettes = (colorStates: readonly ColorState[]): void => {
-		if (!isServer) {
-			localStorage.setItem(
-				storageKeys.palettes,
-				JSON.stringify(colorStatesToStoredPalettes(colorStates)),
-			);
-		}
-	};
-
-	const getColor = (index: number) => () => colors()[index];
-	const setColorAt = (index: number) => (value: ColorState) => {
-		const newColors = colors().map((c, i) => (i === index ? value : c));
-		setColors(newColors);
-		savePalettes(newColors);
-	};
+	const { colors, setColors, savePalettes, getColor, setColorAt } = useColors();
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
 	const [theme, setTheme] = createSignal<Theme>(defaultTheme);
