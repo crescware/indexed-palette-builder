@@ -28,10 +28,6 @@ const defaultShowEdgeShades = {
 
 type StoredPalette = { name: string; input: string };
 
-const defaultPalettes: readonly StoredPalette[] = [
-	{ name: "primary", input: "#3b82f6" },
-];
-
 const randomColors = [
 	"oklch(63.7% 0.237 25.331)",
 	"oklch(68.1% 0.162 75.834)",
@@ -175,6 +171,40 @@ function getRandomColorName(hue: number): string {
 	return names[randomIndex];
 }
 
+function extractHue(color: string): number | null {
+	const match = color.match(/oklch\([^)]+\s+([\d.]+)\)/);
+	return match ? Number.parseFloat(match[1]) : null;
+}
+
+function getHueDifference(hue1: number, hue2: number): number {
+	const diff = Math.abs(hue1 - hue2);
+	return Math.min(diff, 360 - diff);
+}
+
+function createRandomColorState(lastHue: number | null = null): ColorState {
+	let randomColor: (typeof randomColors)[number];
+	let hue: number;
+	let attempts = 0;
+	const maxAttempts = 20;
+
+	do {
+		randomColor =
+			randomColors[Math.floor(Math.random() * randomColors.length)];
+		hue = extractHue(randomColor) ?? 0;
+		attempts++;
+	} while (
+		lastHue !== null &&
+		getHueDifference(hue, lastHue) < 30 &&
+		attempts < maxAttempts
+	);
+
+	return {
+		name: getRandomColorName(hue),
+		input: randomColor,
+		palette: generatePaletteFromOklchString(randomColor),
+	};
+}
+
 const palettesToColorStates = (
 	palettes: readonly StoredPalette[],
 ): readonly ColorState[] =>
@@ -190,9 +220,9 @@ const colorStatesToStoredPalettes = (
 	colors.map((c) => ({ name: c.name, input: c.input }));
 
 export default function Home() {
-	const [colors, setColors] = createSignal<readonly ColorState[]>(
-		palettesToColorStates(defaultPalettes),
-	);
+	const [colors, setColors] = createSignal<readonly ColorState[]>([
+		createRandomColorState(),
+	]);
 
 	const savePalettes = (colorStates: readonly ColorState[]): void => {
 		if (!isServer) {
@@ -258,7 +288,7 @@ export default function Home() {
 
 		applyTheme(defaultTheme);
 		setShowEdgeShades(defaultShowEdgeShades);
-		setColors(palettesToColorStates(defaultPalettes));
+		setColors([createRandomColorState()]);
 		setIsSettingsOpen(false);
 		setIsEditMode(false);
 	};
@@ -416,45 +446,11 @@ export default function Home() {
 	};
 
 	const handleAddPalette = () => {
-		const extractHue = (color: string): number | null => {
-			const match = color.match(/oklch\([^)]+\s+([\d.]+)\)/);
-			return match ? Number.parseFloat(match[1]) : null;
-		};
-
-		const getHueDifference = (hue1: number, hue2: number): number => {
-			const diff = Math.abs(hue1 - hue2);
-			return Math.min(diff, 360 - diff);
-		};
-
 		const currentColors = colors();
 		const lastColor = currentColors[currentColors.length - 1];
 		const lastHue = lastColor ? extractHue(lastColor.input) : null;
 
-		let randomColor: (typeof randomColors)[number];
-		let hue: number;
-		let attempts = 0;
-		const maxAttempts = 20;
-
-		do {
-			randomColor =
-				randomColors[Math.floor(Math.random() * randomColors.length)];
-			hue = extractHue(randomColor) ?? 0;
-			attempts++;
-		} while (
-			lastHue !== null &&
-			getHueDifference(hue, lastHue) < 30 &&
-			attempts < maxAttempts
-		);
-
-		const name = getRandomColorName(hue);
-		const newColors = [
-			...currentColors,
-			{
-				name,
-				input: randomColor,
-				palette: generatePaletteFromOklchString(randomColor),
-			},
-		];
+		const newColors = [...currentColors, createRandomColorState(lastHue)];
 		setColors(newColors);
 		savePalettes(newColors);
 
