@@ -339,13 +339,39 @@ export default function Home() {
 	};
 
 	const handleAddPalette = () => {
-		const randomColor =
-			randomColors[Math.floor(Math.random() * randomColors.length)];
-		const hueMatch = randomColor.match(/oklch\([^)]+\s+([\d.]+)\)/);
-		const hue = hueMatch ? Number.parseFloat(hueMatch[1]) : 0;
+		const extractHue = (color: string): number | null => {
+			const match = color.match(/oklch\([^)]+\s+([\d.]+)\)/);
+			return match ? Number.parseFloat(match[1]) : null;
+		};
+
+		const getHueDifference = (hue1: number, hue2: number): number => {
+			const diff = Math.abs(hue1 - hue2);
+			return Math.min(diff, 360 - diff);
+		};
+
+		const currentColors = colors();
+		const lastColor = currentColors[currentColors.length - 1];
+		const lastHue = lastColor ? extractHue(lastColor.input) : null;
+
+		let randomColor: (typeof randomColors)[number];
+		let hue: number;
+		let attempts = 0;
+		const maxAttempts = 20;
+
+		do {
+			randomColor =
+				randomColors[Math.floor(Math.random() * randomColors.length)];
+			hue = extractHue(randomColor) ?? 0;
+			attempts++;
+		} while (
+			lastHue !== null &&
+			getHueDifference(hue, lastHue) < 30 &&
+			attempts < maxAttempts
+		);
+
 		const name = getRandomColorName(hue);
 		const newColors = [
-			...colors(),
+			...currentColors,
 			{
 				name,
 				input: randomColor,
