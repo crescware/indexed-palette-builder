@@ -27,7 +27,11 @@ export default function Home() {
 
 		if (
 			!confirm(
-				"Are you sure you want to reset all data? This will delete all palettes and settings. This action cannot be undone.",
+				[
+					"Are you sure you want to reset all data?",
+					"This will delete all palettes and settings.",
+					"This action cannot be undone.",
+				].join(" "),
 			)
 		) {
 			return;
