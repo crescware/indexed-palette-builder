@@ -387,11 +387,24 @@ export default function Home() {
 		const setColor = setColorAt(index);
 		setColor({ ...color(), input: value });
 
+		// Try parsing as hex without '#' if 3 or 6 characters
+		const hexWithoutHash =
+			(value.length === 3 || value.length === 6) &&
+			/^[0-9a-fA-F]+$/.test(value)
+				? `#${value}`
+				: null;
+
 		if (isValidHex(value)) {
 			setColor({
 				...color(),
 				input: value,
 				palette: generatePaletteFromHex(value),
+			});
+		} else if (hexWithoutHash && isValidHex(hexWithoutHash)) {
+			setColor({
+				...color(),
+				input: value,
+				palette: generatePaletteFromHex(hexWithoutHash),
 			});
 		} else if (value.startsWith("oklch(")) {
 			try {
