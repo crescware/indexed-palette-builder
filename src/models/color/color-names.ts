@@ -104,3 +104,5 @@ export const colorNames = {
 	}
 	throw new Error("Duplicate color names found");
 })();
+
+export type ColorCategory = keyof typeof colorNames;

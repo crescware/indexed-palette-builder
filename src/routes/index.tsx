@@ -12,11 +12,12 @@ import { isServer } from "solid-js/web";
 import { ColorPalette } from "../components/color-palette";
 import { Header } from "../components/header";
 import { storageKeys, storagePrefix } from "../constants/storage";
+import { colorNames } from "../models/color/color-names";
+import { getColorCategory } from "../models/color/get-color-category";
 import type { ColorState } from "../models/color/color-state";
+import type { PaletteStep } from "../models/color/generate-palette";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import { generatePaletteFromOklchString } from "../models/color/generate-palette-from-oklch-string";
-import type { PaletteStep } from "../models/color/generate-palette";
-import { colorNames } from "../models/color/color-names";
 import { randomColors } from "../models/color/random-colors";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
@@ -30,23 +31,6 @@ const defaultShowEdgeShades = {
 } as const satisfies ShowEdgeShadesState;
 
 type StoredPalette = { name: string; input: string };
-
-type ColorCategory = keyof typeof colorNames;
-
-function getColorCategory(hue: number): ColorCategory {
-	const normalizedHue = ((hue % 360) + 360) % 360;
-
-	if (normalizedHue >= 0 && normalizedHue < 35) return "red";
-	if (normalizedHue >= 35 && normalizedHue < 70) return "orange";
-	if (normalizedHue >= 70 && normalizedHue < 100) return "yellow";
-	if (normalizedHue >= 100 && normalizedHue < 160) return "green";
-	if (normalizedHue >= 160 && normalizedHue < 220) return "cyan";
-	if (normalizedHue >= 220 && normalizedHue < 280) return "blue";
-	if (normalizedHue >= 280 && normalizedHue < 330) return "purple";
-	if (normalizedHue >= 330 && normalizedHue < 360) return "pink";
-
-	throw new Error(`Invalid hue value: ${hue} (normalized: ${normalizedHue})`);
-}
 
 function getRandomColorName(hue: number): string {
 	const category = getColorCategory(hue);
@@ -104,9 +88,7 @@ function createRandomColorState(
 	};
 }
 
-function generatePalette(
-	input: string,
-): readonly PaletteStep[] | null {
+function generatePalette(input: string): readonly PaletteStep[] | null {
 	if (isValidHex(input)) {
 		return generatePaletteFromHex(input);
 	}
@@ -593,7 +575,7 @@ export default function Home() {
 								textContent={cssOutput()}
 								class="w-full flex-1 min-h-0 p-3 font-mono text-xs border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
 							/>
-							　
+								
 						</div>
 					</div>
 				</main>
