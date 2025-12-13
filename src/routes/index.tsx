@@ -44,6 +44,65 @@ const randomColors = [
 	"oklch(64.5% 0.246 16.439)",
 ] as const;
 
+const colorNames = {
+	red: [
+		"cherry", "apple", "strawberry", "pomegranate", "raspberry",
+		"tomato", "poppy", "hibiscus", "cranberry", "pepper",
+	],
+	orange: [
+		"orange", "tangerine", "carrot", "apricot", "persimmon",
+		"pumpkin", "marigold", "papaya", "ginger", "autumn",
+	],
+	yellow: [
+		"lemon", "banana", "sunflower", "dandelion", "honey",
+		"corn", "daffodil", "mango", "marigold", "buttercup",
+	],
+	green: [
+		"mint", "lime", "apple", "fern", "olive",
+		"basil", "avocado", "cucumber", "clover", "pine",
+	],
+	cyan: [
+		"aqua", "glacier", "lagoon", "seafoam", "mint",
+		"oasis", "turquoise", "crystal", "iceberg", "rain",
+	],
+	blue: [
+		"blueberry", "sapphire", "cobalt", "lapis", "iris",
+		"hydrangea", "ocean", "sky", "indigo", "bellflower",
+	],
+	purple: [
+		"grape", "lavender", "violet", "plum", "eggplant",
+		"amethyst", "lilac", "wisteria", "blackberry", "orchid",
+	],
+	pink: [
+		"rose", "peony", "sakura", "peach", "carnation",
+		"cosmos", "lotus", "azalea", "camellia", "tulip",
+	],
+} as const;
+
+type ColorCategory = keyof typeof colorNames;
+
+function getColorCategory(hue: number): ColorCategory {
+	const normalizedHue = ((hue % 360) + 360) % 360;
+
+	if (normalizedHue >= 0 && normalizedHue < 35) return "red";
+	if (normalizedHue >= 35 && normalizedHue < 70) return "orange";
+	if (normalizedHue >= 70 && normalizedHue < 100) return "yellow";
+	if (normalizedHue >= 100 && normalizedHue < 160) return "green";
+	if (normalizedHue >= 160 && normalizedHue < 220) return "cyan";
+	if (normalizedHue >= 220 && normalizedHue < 280) return "blue";
+	if (normalizedHue >= 280 && normalizedHue < 330) return "purple";
+	if (normalizedHue >= 330 && normalizedHue < 360) return "pink";
+
+	throw new Error(`Invalid hue value: ${hue} (normalized: ${normalizedHue})`);
+}
+
+function getRandomColorName(hue: number): string {
+	const category = getColorCategory(hue);
+	const names = colorNames[category];
+	const randomIndex = Math.floor(Math.random() * names.length);
+	return names[randomIndex];
+}
+
 const palettesToColorStates = (
 	palettes: readonly StoredPalette[],
 ): readonly ColorState[] =>
@@ -282,10 +341,13 @@ export default function Home() {
 	const handleAddPalette = () => {
 		const randomColor =
 			randomColors[Math.floor(Math.random() * randomColors.length)];
+		const hueMatch = randomColor.match(/oklch\([^)]+\s+([\d.]+)\)/);
+		const hue = hueMatch ? Number.parseFloat(hueMatch[1]) : 0;
+		const name = getRandomColorName(hue);
 		const newColors = [
 			...colors(),
 			{
-				name: "primary",
+				name,
 				input: randomColor,
 				palette: generatePaletteFromOklchString(randomColor),
 			},
