@@ -217,6 +217,7 @@ function createRandomColorState(
 		name,
 		input: randomColor,
 		palette: generatePaletteFromOklchString(randomColor),
+		errorType: null,
 	};
 }
 
@@ -245,18 +246,18 @@ function generatePalette(
 	return null;
 }
 
+const fallbackPalette = generatePaletteFromHex("#f00");
+
 const palettesToColorStates = (
 	palettes: readonly StoredPalette[],
 ): readonly ColorState[] =>
 	palettes.map((p) => {
 		const palette = generatePalette(p.input);
-		if (!palette) {
-			throw new Error(`Invalid color format: ${p.input}`);
-		}
 		return {
 			name: p.name,
 			input: p.input,
-			palette,
+			palette: palette ?? fallbackPalette,
+			errorType: palette ? null : "ParseError",
 		};
 	});
 
@@ -417,16 +418,14 @@ export default function Home() {
 		const value = target.value;
 		const color = getColor(index);
 		const setColor = setColorAt(index);
-		setColor({ ...color(), input: value });
-
 		const palette = generatePalette(value);
-		if (palette) {
-			setColor({
-				...color(),
-				input: value,
-				palette,
-			});
-		}
+
+		setColor({
+			...color(),
+			input: value,
+			palette: palette ?? color().palette,
+			errorType: palette ? null : "ParseError",
+		});
 	};
 
 	const createDisplayedPalette = (index: number) =>

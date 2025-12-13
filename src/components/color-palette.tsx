@@ -83,10 +83,22 @@ export function ColorPalette(props: Props) {
 
 				{/* Reserved area for warning messages */}
 				<div class="text-sm text-gray-600 dark:text-gray-400 h-5">
-					<Show when={props.hiddenClosestEdgeShade() !== null}>
+					<Show when={props.color().errorType === "ParseError"}>
+						<span class="text-red-500 dark:text-red-400">
+							Invalid color format
+						</span>
+					</Show>
+					<Show
+						when={
+							!props.color().errorType &&
+							props.hiddenClosestEdgeShade() !== null
+						}
+					>
 						Closest to edge shade {props.hiddenClosestEdgeShade()}
 					</Show>
-					<Show when={props.needsStrongCorrection()}>
+					<Show
+						when={!props.color().errorType && props.needsStrongCorrection()}
+					>
 						This color does not look like Tailwind, so strong correction is
 						being applied
 					</Show>
