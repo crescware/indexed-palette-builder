@@ -14,6 +14,8 @@ import { Header } from "../components/header";
 import { storageKeys, storagePrefix } from "../constants/storage";
 import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
+import { generatePaletteFromOklchString } from "../models/color/generate-palette-from-oklch-string";
+import type { PaletteStep } from "../models/color/generate-palette";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
@@ -27,18 +29,237 @@ const defaultShowEdgeShades = {
 
 type StoredPalette = { name: string; input: string };
 
-const defaultPalettes: readonly StoredPalette[] = [
-	{ name: "primary", input: "#3b82f6" },
-];
+const randomColors = [
+	"oklch(63.7% 0.237 25.331)",
+	"oklch(68.1% 0.162 75.834)",
+	"oklch(76.8% 0.233 130.85)",
+	"oklch(69.6% 0.17 162.48)",
+	"oklch(71.5% 0.143 215.221)",
+	"oklch(62.3% 0.214 259.815)",
+	"oklch(60.6% 0.25 292.717)",
+	"oklch(66.7% 0.295 322.15)",
+	"oklch(64.5% 0.246 16.439)",
+] as const;
+
+const colorNames = {
+	red: [
+		"cherry",
+		"apple",
+		"strawberry",
+		"pomegranate",
+		"raspberry",
+		"tomato",
+		"poppy",
+		"hibiscus",
+		"cranberry",
+		"pepper",
+	],
+	orange: [
+		"clementine",
+		"tangerine",
+		"carrot",
+		"apricot",
+		"persimmon",
+		"pumpkin",
+		"marigold",
+		"papaya",
+		"ginger",
+		"autumn",
+	],
+	yellow: [
+		"lemon",
+		"banana",
+		"sunflower",
+		"dandelion",
+		"honey",
+		"corn",
+		"daffodil",
+		"mango",
+		"canola",
+		"buttercup",
+	],
+	green: [
+		"mint",
+		"citrus",
+		"kiwi",
+		"fern",
+		"olive",
+		"basil",
+		"avocado",
+		"cucumber",
+		"clover",
+		"pine",
+	],
+	cyan: [
+		"aqua",
+		"glacier",
+		"lagoon",
+		"seafoam",
+		"topaz",
+		"oasis",
+		"turquoise",
+		"crystal",
+		"iceberg",
+		"rain",
+	],
+	blue: [
+		"blueberry",
+		"sapphire",
+		"cobalt",
+		"lapis",
+		"iris",
+		"hydrangea",
+		"ocean",
+		"azure",
+		"denim",
+		"bellflower",
+	],
+	purple: [
+		"grape",
+		"lavender",
+		"pansy",
+		"plum",
+		"eggplant",
+		"amethyst",
+		"lilac",
+		"wisteria",
+		"blackberry",
+		"orchid",
+	],
+	pink: [
+		"dahlia",
+		"peony",
+		"sakura",
+		"peach",
+		"carnation",
+		"cosmos",
+		"lotus",
+		"azalea",
+		"camellia",
+		"tulip",
+	],
+} as const;
+
+(() => {
+	const flatten = Object.values(colorNames).flat();
+	if (flatten.length === new Set(flatten).size) {
+		return; // noop
+	}
+	throw new Error("Duplicate color names found");
+})();
+
+type ColorCategory = keyof typeof colorNames;
+
+function getColorCategory(hue: number): ColorCategory {
+	const normalizedHue = ((hue % 360) + 360) % 360;
+
+	if (normalizedHue >= 0 && normalizedHue < 35) return "red";
+	if (normalizedHue >= 35 && normalizedHue < 70) return "orange";
+	if (normalizedHue >= 70 && normalizedHue < 100) return "yellow";
+	if (normalizedHue >= 100 && normalizedHue < 160) return "green";
+	if (normalizedHue >= 160 && normalizedHue < 220) return "cyan";
+	if (normalizedHue >= 220 && normalizedHue < 280) return "blue";
+	if (normalizedHue >= 280 && normalizedHue < 330) return "purple";
+	if (normalizedHue >= 330 && normalizedHue < 360) return "pink";
+
+	throw new Error(`Invalid hue value: ${hue} (normalized: ${normalizedHue})`);
+}
+
+function getRandomColorName(hue: number): string {
+	const category = getColorCategory(hue);
+	const names = colorNames[category];
+	const randomIndex = Math.floor(Math.random() * names.length);
+	return names[randomIndex];
+}
+
+function extractHue(color: string): number | null {
+	const match = color.match(/oklch\([^)]+\s+([\d.]+)\)/);
+	return match ? Number.parseFloat(match[1]) : null;
+}
+
+function getHueDifference(hue1: number, hue2: number): number {
+	const diff = Math.abs(hue1 - hue2);
+	return Math.min(diff, 360 - diff);
+}
+
+function createRandomColorState(
+	existingNames: readonly string[] = [],
+	lastHue: number | null = null,
+): ColorState {
+	let randomColor: (typeof randomColors)[number];
+	let hue: number;
+	let colorAttempts = 0;
+	const maxAttempts = 20;
+
+	do {
+		randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
+		hue = extractHue(randomColor) ?? 0;
+		colorAttempts++;
+	} while (
+		lastHue !== null &&
+		getHueDifference(hue, lastHue) < 30 &&
+		colorAttempts < maxAttempts
+	);
+
+	let name: string;
+	let nameAttempts = 0;
+
+	do {
+		name = getRandomColorName(hue);
+		nameAttempts++;
+	} while (existingNames.includes(name) && nameAttempts < maxAttempts);
+
+	if (existingNames.includes(name)) {
+		name = `color${existingNames.length + 1}`;
+	}
+
+	return {
+		name,
+		input: randomColor,
+		palette: generatePaletteFromOklchString(randomColor),
+		errorType: null,
+	};
+}
+
+function generatePalette(
+	input: string,
+): readonly PaletteStep[] | null {
+	if (isValidHex(input)) {
+		return generatePaletteFromHex(input);
+	}
+
+	if (
+		(input.length === 3 || input.length === 6) &&
+		/^[0-9a-fA-F]+$/.test(input)
+	) {
+		return generatePaletteFromHex(`#${input}`);
+	}
+
+	if (input.startsWith("oklch(")) {
+		try {
+			return generatePaletteFromOklchString(input);
+		} catch {
+			return null;
+		}
+	}
+
+	return null;
+}
+
+const fallbackPalette = generatePaletteFromHex("#f00");
 
 const palettesToColorStates = (
 	palettes: readonly StoredPalette[],
 ): readonly ColorState[] =>
-	palettes.map((p) => ({
-		name: p.name,
-		input: p.input,
-		palette: generatePaletteFromHex(p.input),
-	}));
+	palettes.map((p) => {
+		const palette = generatePalette(p.input);
+		return {
+			name: p.name,
+			input: p.input,
+			palette: palette ?? fallbackPalette,
+			errorType: palette ? null : "ParseError",
+		};
+	});
 
 const colorStatesToStoredPalettes = (
 	colors: readonly ColorState[],
@@ -46,9 +267,9 @@ const colorStatesToStoredPalettes = (
 	colors.map((c) => ({ name: c.name, input: c.input }));
 
 export default function Home() {
-	const [colors, setColors] = createSignal<readonly ColorState[]>(
-		palettesToColorStates(defaultPalettes),
-	);
+	const [colors, setColors] = createSignal<readonly ColorState[]>([
+		createRandomColorState(),
+	]);
 
 	const savePalettes = (colorStates: readonly ColorState[]): void => {
 		if (!isServer) {
@@ -79,6 +300,7 @@ export default function Home() {
 		null,
 	);
 	let settingsContainerRef: HTMLDivElement | undefined;
+	let paletteContainerRef: HTMLDivElement | undefined;
 
 	const handleChangeShowEdgeShades = (value: boolean): void => {
 		setShowEdgeShades({ isLoading: false, value });
@@ -92,7 +314,11 @@ export default function Home() {
 			return;
 		}
 
-		if (!confirm("Are you sure you want to reset all data? This will delete all palettes and settings. This action cannot be undone.")) {
+		if (
+			!confirm(
+				"Are you sure you want to reset all data? This will delete all palettes and settings. This action cannot be undone.",
+			)
+		) {
 			return;
 		}
 
@@ -109,8 +335,9 @@ export default function Home() {
 
 		applyTheme(defaultTheme);
 		setShowEdgeShades(defaultShowEdgeShades);
-		setColors(palettesToColorStates(defaultPalettes));
+		setColors([createRandomColorState()]);
 		setIsSettingsOpen(false);
+		setIsEditMode(false);
 	};
 
 	const applyTheme = (newTheme: Theme) => {
@@ -191,15 +418,14 @@ export default function Home() {
 		const value = target.value;
 		const color = getColor(index);
 		const setColor = setColorAt(index);
-		setColor({ ...color(), input: value });
+		const palette = generatePalette(value);
 
-		if (isValidHex(value)) {
-			setColor({
-				...color(),
-				input: value,
-				palette: generatePaletteFromHex(value),
-			});
-		}
+		setColor({
+			...color(),
+			input: value,
+			palette: palette ?? color().palette,
+			errorType: palette ? null : "ParseError",
+		});
 	};
 
 	const createDisplayedPalette = (index: number) =>
@@ -255,16 +481,33 @@ export default function Home() {
 	};
 
 	const handleAddPalette = () => {
+		const currentColors = colors();
+		const existingNames = currentColors.map((c) => c.name);
+		const lastColor = currentColors[currentColors.length - 1];
+		const lastHue = lastColor ? extractHue(lastColor.input) : null;
+
 		const newColors = [
-			...colors(),
-			{
-				name: "primary",
-				input: "#3b82f6",
-				palette: generatePaletteFromHex("#3b82f6"),
-			},
+			...currentColors,
+			createRandomColorState(existingNames, lastHue),
 		];
 		setColors(newColors);
 		savePalettes(newColors);
+
+		requestAnimationFrame(() => {
+			if (paletteContainerRef) {
+				const paletteItems = paletteContainerRef.querySelectorAll(
+					":scope > div:not(:last-child)",
+				);
+				const lastPalette = paletteItems[paletteItems.length - 1];
+				if (lastPalette) {
+					const gap = 12; // gap-3 = 0.75rem = 12px
+					paletteContainerRef.scrollBy({
+						top: lastPalette.getBoundingClientRect().height + gap,
+						behavior: "instant",
+					});
+				}
+			}
+		});
 	};
 
 	const handleDeletePalette = (index: number) => {
@@ -327,7 +570,7 @@ export default function Home() {
 					</div>
 				}
 			>
-				<main class="text-center h-full flex flex-col max-w-7xl w-full">
+				<main class="text-center h-full flex flex-col max-w-7xl w-full animate-fade-in">
 					<Header
 						settingsContainerRef={(el) => {
 							settingsContainerRef = el;
@@ -346,7 +589,12 @@ export default function Home() {
 
 					<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
 						{/* Left Column: Palette Builder */}
-						<div class="flex flex-col gap-3 min-h-0 overflow-y-auto">
+						<div
+							ref={(el) => {
+								paletteContainerRef = el;
+							}}
+							class="flex flex-col gap-3 min-h-0 overflow-y-auto px-1"
+						>
 							<Index each={colors()}>
 								{(_, index) => {
 									const displayedPalette = createDisplayedPalette(index);
@@ -432,7 +680,7 @@ export default function Home() {
 							<button
 								type="button"
 								onClick={handleAddPalette}
-								class="w-full flex flex-col items-center gap-1 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors"
+								class="w-full flex flex-col items-center gap-1 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 active:border-gray-500 active:text-gray-700 dark:active:border-gray-400 dark:active:text-gray-200 transition-colors"
 							>
 								<Plus size={20} />
 								<span class="text-sm">Add Palette</span>
