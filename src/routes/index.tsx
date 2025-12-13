@@ -79,6 +79,7 @@ export default function Home() {
 		null,
 	);
 	let settingsContainerRef: HTMLDivElement | undefined;
+	let paletteContainerRef: HTMLDivElement | undefined;
 
 	const handleChangeShowEdgeShades = (value: boolean): void => {
 		setShowEdgeShades({ isLoading: false, value });
@@ -265,6 +266,22 @@ export default function Home() {
 		];
 		setColors(newColors);
 		savePalettes(newColors);
+
+		requestAnimationFrame(() => {
+			if (paletteContainerRef) {
+				const paletteItems = paletteContainerRef.querySelectorAll(
+					":scope > div:not(:last-child)",
+				);
+				const lastPalette = paletteItems[paletteItems.length - 1];
+				if (lastPalette) {
+					const gap = 12; // gap-3 = 0.75rem = 12px
+					paletteContainerRef.scrollBy({
+						top: lastPalette.getBoundingClientRect().height + gap,
+						behavior: "instant",
+					});
+				}
+			}
+		});
 	};
 
 	const handleDeletePalette = (index: number) => {
@@ -346,7 +363,12 @@ export default function Home() {
 
 					<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
 						{/* Left Column: Palette Builder */}
-						<div class="flex flex-col gap-3 min-h-0 overflow-y-auto">
+						<div
+							ref={(el) => {
+								paletteContainerRef = el;
+							}}
+							class="flex flex-col gap-3 min-h-0 overflow-y-auto"
+						>
 							<Index each={colors()}>
 								{(_, index) => {
 									const displayedPalette = createDisplayedPalette(index);
