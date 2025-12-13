@@ -1,18 +1,26 @@
-import { type Accessor, createSignal, onMount } from "solid-js";
+import {
+	type Accessor,
+	createContext,
+	createSignal,
+	onMount,
+	type ParentProps,
+} from "solid-js";
 import { isServer } from "solid-js/web";
 
-import { storageKeys } from "../constants/storage";
-import type { Theme } from "../models/theme";
+import { storageKeys } from "../../constants/storage";
+import type { Theme } from "../../models/theme";
 
 const defaultTheme = "system" as const satisfies Theme;
 
-type UseThemeReturn = Readonly<{
+export type ThemeContextValue = Readonly<{
 	theme: Accessor<Theme>;
 	applyTheme: (newTheme: Theme) => void;
 	resetTheme: () => void;
 }>;
 
-export function useTheme(): UseThemeReturn {
+export const ThemeContext = createContext<ThemeContextValue>();
+
+export function ThemeProvider(props: ParentProps) {
 	const [theme, setTheme] = createSignal<Theme>(defaultTheme);
 
 	const applyTheme = (newTheme: Theme) => {
@@ -56,5 +64,9 @@ export function useTheme(): UseThemeReturn {
 		}
 	});
 
-	return { theme, applyTheme, resetTheme };
+	return (
+		<ThemeContext.Provider value={{ theme, applyTheme, resetTheme }}>
+			{props.children}
+		</ThemeContext.Provider>
+	);
 }

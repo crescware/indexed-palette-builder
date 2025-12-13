@@ -2,20 +2,20 @@ import { X } from "lucide-solid";
 import type { Accessor, Setter } from "solid-js";
 import { Show } from "solid-js";
 
+import { useTheme } from "../contexts/theme/use-theme";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
-import type { Theme } from "../models/theme";
 
 type Props = Readonly<{
 	isOpen: Accessor<boolean>;
 	setIsOpen: Setter<boolean>;
-	theme: Accessor<Theme>;
-	applyTheme: (theme: Theme) => void;
 	showEdgeShades: Accessor<ShowEdgeShadesState>;
 	onChangeShowEdgeShades: (value: boolean) => void;
 	onResetSettings: () => void;
 }>;
 
 export function SettingsPopup(props: Props) {
+	const { theme, applyTheme } = useTheme();
+
 	const isShowEdgeShadesChecked = () => {
 		const state = props.showEdgeShades();
 		return !state.isLoading && state.value;
@@ -48,8 +48,8 @@ export function SettingsPopup(props: Props) {
 									type="radio"
 									name="theme"
 									value="light"
-									checked={props.theme() === "light"}
-									onInput={() => props.applyTheme("light")}
+									checked={theme() === "light"}
+									onInput={() => applyTheme("light")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
 								<span class="text-sm text-gray-700 dark:text-gray-300">
@@ -61,8 +61,8 @@ export function SettingsPopup(props: Props) {
 									type="radio"
 									name="theme"
 									value="dark"
-									checked={props.theme() === "dark"}
-									onInput={() => props.applyTheme("dark")}
+									checked={theme() === "dark"}
+									onInput={() => applyTheme("dark")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
 								<span class="text-sm text-gray-700 dark:text-gray-300">
@@ -74,8 +74,8 @@ export function SettingsPopup(props: Props) {
 									type="radio"
 									name="theme"
 									value="system"
-									checked={props.theme() === "system"}
-									onInput={() => props.applyTheme("system")}
+									checked={theme() === "system"}
+									onInput={() => applyTheme("system")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
 								<span class="text-sm text-gray-700 dark:text-gray-300">

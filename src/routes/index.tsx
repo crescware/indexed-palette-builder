@@ -7,7 +7,7 @@ import { Loading } from "../components/loading";
 import { PaletteBuilder } from "../components/palette-builder";
 import { storageKeys, storagePrefix } from "../constants/storage";
 import { useColors } from "../contexts/colors/use-colors";
-import { useTheme } from "../hooks/use-theme";
+import { useTheme } from "../contexts/theme/use-theme";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 
@@ -18,7 +18,7 @@ const defaultShowEdgeShades = {
 
 export default function Home() {
 	const { setColors, loadPalettes } = useColors();
-	const { theme, applyTheme, resetTheme } = useTheme();
+	const { resetTheme } = useTheme();
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
 
@@ -115,8 +115,6 @@ export default function Home() {
 						isSettingsOpen={isSettingsOpen}
 						setIsSettingsOpen={setIsSettingsOpen}
 						onClickSettingsButton={handleOnClickSettingsButton}
-						theme={theme}
-						applyTheme={applyTheme}
 						showEdgeShades={showEdgeShades}
 						onChangeShowEdgeShades={handleChangeShowEdgeShades}
 						onResetSettings={handleResetSettings}
