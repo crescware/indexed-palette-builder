@@ -25,7 +25,7 @@ export function ColorPalette(props: Props) {
 						for="name-input"
 						class="block text-xs font-medium text-gray-700 dark:text-gray-300 text-left"
 					>
-						Color Name
+						Name
 					</label>
 					<input
 						id="name-input"
