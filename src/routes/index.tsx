@@ -16,7 +16,6 @@ import { useColors } from "../contexts/colors/use-colors";
 import type { ColorState } from "../models/color/color-state";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import { extractHue } from "../models/color/create-random-color-state/extract-hue";
-import { parseColorToPalette } from "../models/color/parse-color-to-palette";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 
@@ -34,8 +33,8 @@ export default function Home() {
 		savePalettes,
 		loadPalettes,
 		getColor,
-		setColorAt,
 		setColorNameAt,
+		setColorValueAt,
 	} = useColors();
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
@@ -157,21 +156,6 @@ export default function Home() {
 			document.removeEventListener("mousedown", handleClickOutside);
 		});
 	});
-
-
-	const handleChangeInput = (index: number, e: Event) => {
-		const target = e.target as HTMLInputElement;
-		const value = target.value;
-		const color = getColor(index);
-		const palette = parseColorToPalette(value);
-
-		setColorAt(index, {
-			...color,
-			input: value,
-			palette: palette ?? color.palette,
-			errorType: palette ? null : "ParseError",
-		});
-	};
 
 	const createDisplayedPalette = (index: number) =>
 		createMemo(() => {
@@ -390,10 +374,10 @@ export default function Home() {
 												<div class="flex-1">
 													<ColorPalette
 														color={() => getColor(index)}
-														onChangeName={(name) =>
-															setColorNameAt(index, name)
+														onChangeName={(name) => setColorNameAt(index, name)}
+														onChangeInput={(value) =>
+															setColorValueAt(index, value)
 														}
-														onChangeInput={(e) => handleChangeInput(index, e)}
 														gridColumns={gridColumns}
 														displayedPalette={displayedPalette}
 														hiddenClosestEdgeShade={createHiddenClosestEdgeShade(
