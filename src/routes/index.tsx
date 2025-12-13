@@ -12,13 +12,12 @@ import { isServer } from "solid-js/web";
 import { ColorPalette } from "../components/color-palette";
 import { Header } from "../components/header";
 import { storageKeys, storagePrefix } from "../constants/storage";
-import { colorNames } from "../models/color/color-names";
-import { getColorCategory } from "../models/color/get-color-category";
 import type { ColorState } from "../models/color/color-state";
+import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
+import { extractHue } from "../models/color/create-random-color-state/extract-hue";
 import type { PaletteStep } from "../models/color/generate-palette";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import { generatePaletteFromOklchString } from "../models/color/generate-palette-from-oklch-string";
-import { randomColors } from "../models/color/random-colors";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
@@ -31,62 +30,6 @@ const defaultShowEdgeShades = {
 } as const satisfies ShowEdgeShadesState;
 
 type StoredPalette = { name: string; input: string };
-
-function getRandomColorName(hue: number): string {
-	const category = getColorCategory(hue);
-	const names = colorNames[category];
-	const randomIndex = Math.floor(Math.random() * names.length);
-	return names[randomIndex];
-}
-
-function extractHue(color: string): number | null {
-	const match = color.match(/oklch\([^)]+\s+([\d.]+)\)/);
-	return match ? Number.parseFloat(match[1]) : null;
-}
-
-function getHueDifference(hue1: number, hue2: number): number {
-	const diff = Math.abs(hue1 - hue2);
-	return Math.min(diff, 360 - diff);
-}
-
-function createRandomColorState(
-	existingNames: readonly string[] = [],
-	lastHue: number | null = null,
-): ColorState {
-	let randomColor: (typeof randomColors)[number];
-	let hue: number;
-	let colorAttempts = 0;
-	const maxAttempts = 20;
-
-	do {
-		randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
-		hue = extractHue(randomColor) ?? 0;
-		colorAttempts++;
-	} while (
-		lastHue !== null &&
-		getHueDifference(hue, lastHue) < 30 &&
-		colorAttempts < maxAttempts
-	);
-
-	let name: string;
-	let nameAttempts = 0;
-
-	do {
-		name = getRandomColorName(hue);
-		nameAttempts++;
-	} while (existingNames.includes(name) && nameAttempts < maxAttempts);
-
-	if (existingNames.includes(name)) {
-		name = `color${existingNames.length + 1}`;
-	}
-
-	return {
-		name,
-		input: randomColor,
-		palette: generatePaletteFromOklchString(randomColor),
-		errorType: null,
-	};
-}
 
 function generatePalette(input: string): readonly PaletteStep[] | null {
 	if (isValidHex(input)) {
@@ -575,7 +518,6 @@ export default function Home() {
 								textContent={cssOutput()}
 								class="w-full flex-1 min-h-0 p-3 font-mono text-xs border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
 							/>
-								
 						</div>
 					</div>
 				</main>
