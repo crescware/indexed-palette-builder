@@ -17,6 +17,7 @@ import { generatePaletteFromHex } from "../models/color/generate-palette-from-he
 import { generatePaletteFromOklchString } from "../models/color/generate-palette-from-oklch-string";
 import type { PaletteStep } from "../models/color/generate-palette";
 import { colorNames } from "../models/color/color-names";
+import { randomColors } from "../models/color/random-colors";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
@@ -29,18 +30,6 @@ const defaultShowEdgeShades = {
 } as const satisfies ShowEdgeShadesState;
 
 type StoredPalette = { name: string; input: string };
-
-const randomColors = [
-	"oklch(63.7% 0.237 25.331)",
-	"oklch(68.1% 0.162 75.834)",
-	"oklch(76.8% 0.233 130.85)",
-	"oklch(69.6% 0.17 162.48)",
-	"oklch(71.5% 0.143 215.221)",
-	"oklch(62.3% 0.214 259.815)",
-	"oklch(60.6% 0.25 292.717)",
-	"oklch(66.7% 0.295 322.15)",
-	"oklch(64.5% 0.246 16.439)",
-] as const;
 
 type ColorCategory = keyof typeof colorNames;
 
