@@ -4,6 +4,7 @@ import { Suspense } from "solid-js";
 
 import "./app.css";
 import { ColorsProvider } from "./contexts/colors/colors-context";
+import { ShowEdgeShadesProvider } from "./contexts/show-edge-shades/show-edge-shades-context";
 import { ThemeProvider } from "./contexts/theme/theme-context";
 import { ThemeLoader } from "./theme-loader";
 
@@ -12,10 +13,12 @@ export default function App() {
 		<Router
 			root={(props) => (
 				<ThemeProvider>
-					<ColorsProvider>
-						<ThemeLoader />
-						<Suspense>{props.children}</Suspense>
-					</ColorsProvider>
+					<ShowEdgeShadesProvider>
+						<ColorsProvider>
+							<ThemeLoader />
+							<Suspense>{props.children}</Suspense>
+						</ColorsProvider>
+					</ShowEdgeShadesProvider>
 				</ThemeProvider>
 			)}
 		>

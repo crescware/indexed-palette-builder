@@ -11,10 +11,7 @@ type Props = Readonly<{
 	isEditMode: Accessor<boolean>;
 	onClickEditButton: () => void;
 }> &
-	Pick<
-		ComponentProps<typeof SettingsPopup>,
-		"showEdgeShades" | "onChangeShowEdgeShades" | "onResetSettings"
-	>;
+	Pick<ComponentProps<typeof SettingsPopup>, "onResetSettings">;
 
 export function Header(props: Props) {
 	return (
@@ -46,8 +43,6 @@ export function Header(props: Props) {
 				<SettingsPopup
 					isOpen={props.isSettingsOpen}
 					setIsOpen={props.setIsSettingsOpen}
-					showEdgeShades={props.showEdgeShades}
-					onChangeShowEdgeShades={props.onChangeShowEdgeShades}
 					onResetSettings={props.onResetSettings}
 				/>
 			</div>

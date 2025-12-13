@@ -3,19 +3,19 @@ import type { Accessor } from "solid-js";
 import { createSignal, Index } from "solid-js";
 
 import { useColors } from "../contexts/colors/use-colors";
+import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import { extractHue } from "../models/color/create-random-color-state/extract-hue";
 import { getColorName } from "../models/color/get-color-name";
-import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import { PaletteRow } from "./palette-row";
 
 type Props = Readonly<{
 	isEditMode: Accessor<boolean>;
-	showEdgeShades: Accessor<ShowEdgeShadesState>;
 }>;
 
 export function PaletteBuilder(props: Props) {
 	const { colors, setColors, savePalettes, getColor } = useColors();
+	const { showEdgeShades } = useShowEdgeShades();
 
 	const [draggedIndex, setDraggedIndex] = createSignal<number | null>(null);
 	const [dropTargetIndex, setDropTargetIndex] = createSignal<number | null>(
@@ -115,7 +115,7 @@ export function PaletteBuilder(props: Props) {
 						draggedIndex={draggedIndex}
 						dropTargetIndex={dropTargetIndex}
 						isEditMode={props.isEditMode}
-						showEdgeShades={props.showEdgeShades}
+						showEdgeShades={showEdgeShades}
 						colorsLength={() => colors().length}
 						onDragStart={handleDragStart}
 						onDragEnd={handleDragEnd}
