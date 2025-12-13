@@ -1,19 +1,18 @@
 import { X } from "lucide-solid";
-import type { Accessor, Setter } from "solid-js";
 import { Show } from "solid-js";
 
+import { useSettings } from "../contexts/settings/use-settings";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
 import { useTheme } from "../contexts/theme/use-theme";
 
 type Props = Readonly<{
-	isOpen: Accessor<boolean>;
-	setIsOpen: Setter<boolean>;
 	onResetSettings: () => void;
 }>;
 
 export function SettingsPopup(props: Props) {
 	const { theme, applyTheme } = useTheme();
 	const { showEdgeShades, setShowEdgeShades } = useShowEdgeShades();
+	const { isSettingsOpen, closeSettings } = useSettings();
 
 	const isShowEdgeShadesChecked = () => {
 		const state = showEdgeShades();
@@ -21,7 +20,7 @@ export function SettingsPopup(props: Props) {
 	};
 
 	return (
-		<Show when={props.isOpen()}>
+		<Show when={isSettingsOpen()}>
 			<div class="absolute top-[calc(100%+0.5rem)] right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 w-64 z-50 flex flex-col gap-3">
 				<div class="flex justify-between items-center">
 					<h2 class="text-base font-semibold text-gray-800 dark:text-gray-200">
@@ -29,7 +28,7 @@ export function SettingsPopup(props: Props) {
 					</h2>
 					<button
 						type="button"
-						onClick={() => props.setIsOpen(false)}
+						onClick={closeSettings}
 						class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
 						aria-label="Close settings"
 					>

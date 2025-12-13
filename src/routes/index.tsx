@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal } from "solid-js";
 import { isServer } from "solid-js/web";
 
 import { CssExport } from "../components/css-export";
@@ -6,6 +6,7 @@ import { Header } from "../components/header";
 import { Loading } from "../components/loading";
 import { PaletteBuilder } from "../components/palette-builder";
 import { useColors } from "../contexts/colors/use-colors";
+import { useSettings } from "../contexts/settings/use-settings";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
 import { useTheme } from "../contexts/theme/use-theme";
 import { clearStorage } from "../models/storage/clear-storage";
@@ -14,10 +15,9 @@ export default function Home() {
 	const { resetColors } = useColors();
 	const { resetTheme } = useTheme();
 	const { showEdgeShades, resetShowEdgeShades } = useShowEdgeShades();
+	const { closeSettings } = useSettings();
 
-	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
 	const [isEditMode, setIsEditMode] = createSignal(false);
-	let settingsContainerRef: HTMLDivElement | undefined;
 
 	const handleResetSettings = (): void => {
 		if (isServer) {
@@ -40,29 +40,8 @@ export default function Home() {
 		resetTheme();
 		resetShowEdgeShades();
 		resetColors();
-		setIsSettingsOpen(false);
+		closeSettings();
 		setIsEditMode(false);
-	};
-
-	onMount(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				isSettingsOpen() &&
-				settingsContainerRef &&
-				!settingsContainerRef.contains(event.target as Node)
-			) {
-				setIsSettingsOpen(false);
-			}
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		onCleanup(() => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		});
-	});
-
-	const handleOnClickSettingsButton = () => {
-		setIsSettingsOpen(!isSettingsOpen());
 	};
 
 	const isLoading = () => showEdgeShades().isLoading;
@@ -72,12 +51,6 @@ export default function Home() {
 			<Loading enabled={isLoading()}>
 				<main class="text-center h-full flex flex-col max-w-7xl w-full animate-fade-in">
 					<Header
-						settingsContainerRef={(el) => {
-							settingsContainerRef = el;
-						}}
-						isSettingsOpen={isSettingsOpen}
-						setIsSettingsOpen={setIsSettingsOpen}
-						onClickSettingsButton={handleOnClickSettingsButton}
 						onResetSettings={handleResetSettings}
 						isEditMode={isEditMode}
 						onClickEditButton={() => setIsEditMode(!isEditMode())}
