@@ -327,7 +327,7 @@ export default function Home() {
 					</div>
 				}
 			>
-				<main class="text-center h-full flex flex-col max-w-7xl w-full">
+				<main class="text-center h-full flex flex-col max-w-7xl w-full animate-fade-in">
 					<Header
 						settingsContainerRef={(el) => {
 							settingsContainerRef = el;
