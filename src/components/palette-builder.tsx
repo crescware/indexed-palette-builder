@@ -1,18 +1,15 @@
 import { Plus } from "lucide-solid";
-import type { Accessor } from "solid-js";
 import { createSignal, Index } from "solid-js";
 
 import { useColors } from "../contexts/colors/use-colors";
+import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
 import { PaletteRow } from "./palette-row";
 
-type Props = Readonly<{
-	isEditMode: Accessor<boolean>;
-}>;
-
-export function PaletteBuilder(props: Props) {
+export function PaletteBuilder() {
 	const { colors, addColor, deleteColor, reorderColors } = useColors();
 	const { showEdgeShades } = useShowEdgeShades();
+	const { isEditMode } = useEditMode();
 
 	const [draggedIndex, setDraggedIndex] = createSignal<number | null>(null);
 	const [dropTargetIndex, setDropTargetIndex] = createSignal<number | null>(
@@ -89,7 +86,7 @@ export function PaletteBuilder(props: Props) {
 						index={index}
 						draggedIndex={draggedIndex}
 						dropTargetIndex={dropTargetIndex}
-						isEditMode={props.isEditMode}
+						isEditMode={isEditMode}
 						showEdgeShades={showEdgeShades}
 						colorsLength={() => colors().length}
 						onDragStart={handleDragStart}

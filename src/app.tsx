@@ -4,6 +4,7 @@ import { Suspense } from "solid-js";
 
 import "./app.css";
 import { ColorsProvider } from "./contexts/colors/colors-context";
+import { EditModeProvider } from "./contexts/edit-mode/edit-mode-context";
 import { SettingsProvider } from "./contexts/settings/settings-context";
 import { ShowEdgeShadesProvider } from "./contexts/show-edge-shades/show-edge-shades-context";
 import { ThemeProvider } from "./contexts/theme/theme-context";
@@ -17,8 +18,10 @@ export default function App() {
 					<ShowEdgeShadesProvider>
 						<ColorsProvider>
 							<SettingsProvider>
-								<ThemeLoader />
-								<Suspense>{props.children}</Suspense>
+								<EditModeProvider>
+									<ThemeLoader />
+									<Suspense>{props.children}</Suspense>
+								</EditModeProvider>
 							</SettingsProvider>
 						</ColorsProvider>
 					</ShowEdgeShadesProvider>

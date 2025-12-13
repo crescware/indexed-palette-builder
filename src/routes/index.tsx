@@ -1,4 +1,3 @@
-import { createSignal } from "solid-js";
 import { isServer } from "solid-js/web";
 
 import { CssExport } from "../components/css-export";
@@ -6,6 +5,7 @@ import { Header } from "../components/header";
 import { Loading } from "../components/loading";
 import { PaletteBuilder } from "../components/palette-builder";
 import { useColors } from "../contexts/colors/use-colors";
+import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useSettings } from "../contexts/settings/use-settings";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
 import { useTheme } from "../contexts/theme/use-theme";
@@ -16,8 +16,7 @@ export default function Home() {
 	const { resetTheme } = useTheme();
 	const { showEdgeShades, resetShowEdgeShades } = useShowEdgeShades();
 	const { closeSettings } = useSettings();
-
-	const [isEditMode, setIsEditMode] = createSignal(false);
+	const { exitEditMode } = useEditMode();
 
 	const handleResetSettings = (): void => {
 		if (isServer) {
@@ -41,7 +40,7 @@ export default function Home() {
 		resetShowEdgeShades();
 		resetColors();
 		closeSettings();
-		setIsEditMode(false);
+		exitEditMode();
 	};
 
 	const isLoading = () => showEdgeShades().isLoading;
@@ -50,14 +49,10 @@ export default function Home() {
 		<div class="flex justify-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
 			<Loading enabled={isLoading()}>
 				<main class="text-center h-full flex flex-col max-w-7xl w-full animate-fade-in">
-					<Header
-						onResetSettings={handleResetSettings}
-						isEditMode={isEditMode}
-						onClickEditButton={() => setIsEditMode(!isEditMode())}
-					/>
+					<Header onResetSettings={handleResetSettings} />
 
 					<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 w-full flex-1 min-h-0 px-4 pb-4">
-						<PaletteBuilder isEditMode={isEditMode} />
+						<PaletteBuilder />
 						<CssExport />
 					</div>
 				</main>

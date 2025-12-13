@@ -1,17 +1,16 @@
 import { Settings } from "lucide-solid";
-import type { Accessor } from "solid-js";
 
+import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useSettings } from "../contexts/settings/use-settings";
 import { SettingsPopup } from "./settings-popup";
 
 type Props = Readonly<{
 	onResetSettings: () => void;
-	isEditMode: Accessor<boolean>;
-	onClickEditButton: () => void;
 }>;
 
 export function Header(props: Props) {
 	const { toggleSettings, setSettingsContainerRef } = useSettings();
+	const { isEditMode, toggleEditMode } = useEditMode();
 
 	return (
 		<header class="flex items-center justify-between py-6 px-4">
@@ -25,10 +24,10 @@ export function Header(props: Props) {
 			>
 				<button
 					type="button"
-					onClick={props.onClickEditButton}
+					onClick={toggleEditMode}
 					class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
 				>
-					{props.isEditMode() ? "Done" : "Edit"}
+					{isEditMode() ? "Done" : "Edit"}
 				</button>
 				<button
 					type="button"
