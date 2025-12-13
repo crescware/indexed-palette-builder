@@ -11,7 +11,7 @@ import { useTheme } from "../contexts/theme/use-theme";
 import { clearStorage } from "../models/storage/clear-storage";
 
 export default function Home() {
-	const { loadPalettes, resetColors } = useColors();
+	const { resetColors } = useColors();
 	const { resetTheme } = useTheme();
 	const { showEdgeShades, resetShowEdgeShades } = useShowEdgeShades();
 
@@ -45,8 +45,6 @@ export default function Home() {
 	};
 
 	onMount(() => {
-		loadPalettes();
-
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
 				isSettingsOpen() &&

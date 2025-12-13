@@ -2,6 +2,7 @@ import {
 	type Accessor,
 	createContext,
 	createSignal,
+	onMount,
 	type ParentProps,
 } from "solid-js";
 import { isServer } from "solid-js/web";
@@ -17,7 +18,6 @@ type StoredPalette = { name: string; input: string };
 
 export type ColorsContextValue = Readonly<{
 	colors: Accessor<readonly ColorState[]>;
-	loadPalettes: () => void;
 	resetColors: () => void;
 	addColor: () => void;
 	deleteColor: (index: number) => void;
@@ -78,6 +78,10 @@ export function ColorsProvider(props: ParentProps) {
 			}
 		}
 	};
+
+	onMount(() => {
+		loadPalettes();
+	});
 
 	const resetColors = (): void => {
 		setColors([createRandomColorState()]);
@@ -144,7 +148,6 @@ export function ColorsProvider(props: ParentProps) {
 		<ColorsContext.Provider
 			value={{
 				colors,
-				loadPalettes,
 				resetColors,
 				addColor,
 				deleteColor,
