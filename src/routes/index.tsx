@@ -54,7 +54,7 @@ const colorNames = {
 		"pepper",
 	],
 	orange: [
-		"orange",
+		"clementine",
 		"tangerine",
 		"carrot",
 		"apricot",
@@ -79,7 +79,7 @@ const colorNames = {
 	],
 	green: [
 		"mint",
-		"lime",
+		"citrus",
 		"kiwi",
 		"fern",
 		"olive",
@@ -109,14 +109,14 @@ const colorNames = {
 		"iris",
 		"hydrangea",
 		"ocean",
-		"sky",
-		"indigo",
+		"azure",
+		"denim",
 		"bellflower",
 	],
 	purple: [
 		"grape",
 		"lavender",
-		"violet",
+		"pansy",
 		"plum",
 		"eggplant",
 		"amethyst",
@@ -126,7 +126,7 @@ const colorNames = {
 		"orchid",
 	],
 	pink: [
-		"rose",
+		"dahlia",
 		"peony",
 		"sakura",
 		"peach",
@@ -181,25 +181,39 @@ function getHueDifference(hue1: number, hue2: number): number {
 	return Math.min(diff, 360 - diff);
 }
 
-function createRandomColorState(lastHue: number | null = null): ColorState {
+function createRandomColorState(
+	existingNames: readonly string[] = [],
+	lastHue: number | null = null,
+): ColorState {
 	let randomColor: (typeof randomColors)[number];
 	let hue: number;
-	let attempts = 0;
+	let colorAttempts = 0;
 	const maxAttempts = 20;
 
 	do {
-		randomColor =
-			randomColors[Math.floor(Math.random() * randomColors.length)];
+		randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
 		hue = extractHue(randomColor) ?? 0;
-		attempts++;
+		colorAttempts++;
 	} while (
 		lastHue !== null &&
 		getHueDifference(hue, lastHue) < 30 &&
-		attempts < maxAttempts
+		colorAttempts < maxAttempts
 	);
 
+	let name: string;
+	let nameAttempts = 0;
+
+	do {
+		name = getRandomColorName(hue);
+		nameAttempts++;
+	} while (existingNames.includes(name) && nameAttempts < maxAttempts);
+
+	if (existingNames.includes(name)) {
+		name = `color${existingNames.length + 1}`;
+	}
+
 	return {
-		name: getRandomColorName(hue),
+		name,
 		input: randomColor,
 		palette: generatePaletteFromOklchString(randomColor),
 	};
@@ -447,10 +461,14 @@ export default function Home() {
 
 	const handleAddPalette = () => {
 		const currentColors = colors();
+		const existingNames = currentColors.map((c) => c.name);
 		const lastColor = currentColors[currentColors.length - 1];
 		const lastHue = lastColor ? extractHue(lastColor.input) : null;
 
-		const newColors = [...currentColors, createRandomColorState(lastHue)];
+		const newColors = [
+			...currentColors,
+			createRandomColorState(existingNames, lastHue),
+		];
 		setColors(newColors);
 		savePalettes(newColors);
 
