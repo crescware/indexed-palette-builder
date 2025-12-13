@@ -16,6 +16,7 @@ import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import { generatePaletteFromOklchString } from "../models/color/generate-palette-from-oklch-string";
 import type { PaletteStep } from "../models/color/generate-palette";
+import { colorNames } from "../models/color/color-names";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
@@ -40,113 +41,6 @@ const randomColors = [
 	"oklch(66.7% 0.295 322.15)",
 	"oklch(64.5% 0.246 16.439)",
 ] as const;
-
-const colorNames = {
-	red: [
-		"cherry",
-		"apple",
-		"strawberry",
-		"pomegranate",
-		"raspberry",
-		"tomato",
-		"poppy",
-		"hibiscus",
-		"cranberry",
-		"pepper",
-	],
-	orange: [
-		"clementine",
-		"tangerine",
-		"carrot",
-		"apricot",
-		"persimmon",
-		"pumpkin",
-		"marigold",
-		"papaya",
-		"ginger",
-		"autumn",
-	],
-	yellow: [
-		"lemon",
-		"banana",
-		"sunflower",
-		"dandelion",
-		"honey",
-		"corn",
-		"daffodil",
-		"mango",
-		"canola",
-		"buttercup",
-	],
-	green: [
-		"mint",
-		"citrus",
-		"kiwi",
-		"fern",
-		"olive",
-		"basil",
-		"avocado",
-		"cucumber",
-		"clover",
-		"pine",
-	],
-	cyan: [
-		"aqua",
-		"glacier",
-		"lagoon",
-		"seafoam",
-		"topaz",
-		"oasis",
-		"turquoise",
-		"crystal",
-		"iceberg",
-		"rain",
-	],
-	blue: [
-		"blueberry",
-		"sapphire",
-		"cobalt",
-		"lapis",
-		"iris",
-		"hydrangea",
-		"ocean",
-		"azure",
-		"denim",
-		"bellflower",
-	],
-	purple: [
-		"grape",
-		"lavender",
-		"pansy",
-		"plum",
-		"eggplant",
-		"amethyst",
-		"lilac",
-		"wisteria",
-		"blackberry",
-		"orchid",
-	],
-	pink: [
-		"dahlia",
-		"peony",
-		"sakura",
-		"peach",
-		"carnation",
-		"cosmos",
-		"lotus",
-		"azalea",
-		"camellia",
-		"tulip",
-	],
-} as const;
-
-(() => {
-	const flatten = Object.values(colorNames).flat();
-	if (flatten.length === new Set(flatten).size) {
-		return; // noop
-	}
-	throw new Error("Duplicate color names found");
-})();
 
 type ColorCategory = keyof typeof colorNames;
 
