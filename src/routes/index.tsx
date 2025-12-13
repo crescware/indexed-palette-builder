@@ -46,38 +46,110 @@ const randomColors = [
 
 const colorNames = {
 	red: [
-		"cherry", "apple", "strawberry", "pomegranate", "raspberry",
-		"tomato", "poppy", "hibiscus", "cranberry", "pepper",
+		"cherry",
+		"apple",
+		"strawberry",
+		"pomegranate",
+		"raspberry",
+		"tomato",
+		"poppy",
+		"hibiscus",
+		"cranberry",
+		"pepper",
 	],
 	orange: [
-		"orange", "tangerine", "carrot", "apricot", "persimmon",
-		"pumpkin", "marigold", "papaya", "ginger", "autumn",
+		"orange",
+		"tangerine",
+		"carrot",
+		"apricot",
+		"persimmon",
+		"pumpkin",
+		"marigold",
+		"papaya",
+		"ginger",
+		"autumn",
 	],
 	yellow: [
-		"lemon", "banana", "sunflower", "dandelion", "honey",
-		"corn", "daffodil", "mango", "marigold", "buttercup",
+		"lemon",
+		"banana",
+		"sunflower",
+		"dandelion",
+		"honey",
+		"corn",
+		"daffodil",
+		"mango",
+		"canola",
+		"buttercup",
 	],
 	green: [
-		"mint", "lime", "apple", "fern", "olive",
-		"basil", "avocado", "cucumber", "clover", "pine",
+		"mint",
+		"lime",
+		"kiwi",
+		"fern",
+		"olive",
+		"basil",
+		"avocado",
+		"cucumber",
+		"clover",
+		"pine",
 	],
 	cyan: [
-		"aqua", "glacier", "lagoon", "seafoam", "mint",
-		"oasis", "turquoise", "crystal", "iceberg", "rain",
+		"aqua",
+		"glacier",
+		"lagoon",
+		"seafoam",
+		"topaz",
+		"oasis",
+		"turquoise",
+		"crystal",
+		"iceberg",
+		"rain",
 	],
 	blue: [
-		"blueberry", "sapphire", "cobalt", "lapis", "iris",
-		"hydrangea", "ocean", "sky", "indigo", "bellflower",
+		"blueberry",
+		"sapphire",
+		"cobalt",
+		"lapis",
+		"iris",
+		"hydrangea",
+		"ocean",
+		"sky",
+		"indigo",
+		"bellflower",
 	],
 	purple: [
-		"grape", "lavender", "violet", "plum", "eggplant",
-		"amethyst", "lilac", "wisteria", "blackberry", "orchid",
+		"grape",
+		"lavender",
+		"violet",
+		"plum",
+		"eggplant",
+		"amethyst",
+		"lilac",
+		"wisteria",
+		"blackberry",
+		"orchid",
 	],
 	pink: [
-		"rose", "peony", "sakura", "peach", "carnation",
-		"cosmos", "lotus", "azalea", "camellia", "tulip",
+		"rose",
+		"peony",
+		"sakura",
+		"peach",
+		"carnation",
+		"cosmos",
+		"lotus",
+		"azalea",
+		"camellia",
+		"tulip",
 	],
 } as const;
+
+(() => {
+	const flatten = Object.values(colorNames).flat();
+	if (flatten.length === new Set(flatten).size) {
+		return; // noop
+	}
+	throw new Error("Duplicate color names found");
+})();
 
 type ColorCategory = keyof typeof colorNames;
 
@@ -165,7 +237,11 @@ export default function Home() {
 			return;
 		}
 
-		if (!confirm("Are you sure you want to reset all data? This will delete all palettes and settings. This action cannot be undone.")) {
+		if (
+			!confirm(
+				"Are you sure you want to reset all data? This will delete all palettes and settings. This action cannot be undone.",
+			)
+		) {
 			return;
 		}
 
@@ -184,6 +260,7 @@ export default function Home() {
 		setShowEdgeShades(defaultShowEdgeShades);
 		setColors(palettesToColorStates(defaultPalettes));
 		setIsSettingsOpen(false);
+		setIsEditMode(false);
 	};
 
 	const applyTheme = (newTheme: Theme) => {
