@@ -4,11 +4,7 @@ import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useSettings } from "../contexts/settings/use-settings";
 import { SettingsPopup } from "./settings-popup";
 
-type Props = Readonly<{
-	onResetSettings: () => void;
-}>;
-
-export function Header(props: Props) {
+export function Header() {
 	const { toggleSettings, setSettingsContainerRef } = useSettings();
 	const { isEditMode, toggleEditMode } = useEditMode();
 
@@ -38,7 +34,7 @@ export function Header(props: Props) {
 					<Settings size={20} />
 				</button>
 
-				<SettingsPopup onResetSettings={props.onResetSettings} />
+				<SettingsPopup />
 			</div>
 		</header>
 	);
