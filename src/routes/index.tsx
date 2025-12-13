@@ -15,6 +15,7 @@ import { storageKeys, storagePrefix } from "../constants/storage";
 import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
 import { generatePaletteFromOklchString } from "../models/color/generate-palette-from-oklch-string";
+import type { PaletteStep } from "../models/color/generate-palette";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
@@ -219,14 +220,45 @@ function createRandomColorState(
 	};
 }
 
+function generatePalette(
+	input: string,
+): readonly PaletteStep[] | null {
+	if (isValidHex(input)) {
+		return generatePaletteFromHex(input);
+	}
+
+	if (
+		(input.length === 3 || input.length === 6) &&
+		/^[0-9a-fA-F]+$/.test(input)
+	) {
+		return generatePaletteFromHex(`#${input}`);
+	}
+
+	if (input.startsWith("oklch(")) {
+		try {
+			return generatePaletteFromOklchString(input);
+		} catch {
+			return null;
+		}
+	}
+
+	return null;
+}
+
 const palettesToColorStates = (
 	palettes: readonly StoredPalette[],
 ): readonly ColorState[] =>
-	palettes.map((p) => ({
-		name: p.name,
-		input: p.input,
-		palette: generatePaletteFromHex(p.input),
-	}));
+	palettes.map((p) => {
+		const palette = generatePalette(p.input);
+		if (!palette) {
+			throw new Error(`Invalid color format: ${p.input}`);
+		}
+		return {
+			name: p.name,
+			input: p.input,
+			palette,
+		};
+	});
 
 const colorStatesToStoredPalettes = (
 	colors: readonly ColorState[],
@@ -387,36 +419,13 @@ export default function Home() {
 		const setColor = setColorAt(index);
 		setColor({ ...color(), input: value });
 
-		// Try parsing as hex without '#' if 3 or 6 characters
-		const hexWithoutHash =
-			(value.length === 3 || value.length === 6) &&
-			/^[0-9a-fA-F]+$/.test(value)
-				? `#${value}`
-				: null;
-
-		if (isValidHex(value)) {
+		const palette = generatePalette(value);
+		if (palette) {
 			setColor({
 				...color(),
 				input: value,
-				palette: generatePaletteFromHex(value),
+				palette,
 			});
-		} else if (hexWithoutHash && isValidHex(hexWithoutHash)) {
-			setColor({
-				...color(),
-				input: value,
-				palette: generatePaletteFromHex(hexWithoutHash),
-			});
-		} else if (value.startsWith("oklch(")) {
-			try {
-				const palette = generatePaletteFromOklchString(value);
-				setColor({
-					...color(),
-					input: value,
-					palette,
-				});
-			} catch {
-				// Invalid oklch string, ignore
-			}
 		}
 	};
 
@@ -585,7 +594,7 @@ export default function Home() {
 							ref={(el) => {
 								paletteContainerRef = el;
 							}}
-							class="flex flex-col gap-3 min-h-0 overflow-y-auto"
+							class="flex flex-col gap-3 min-h-0 overflow-y-auto px-1"
 						>
 							<Index each={colors()}>
 								{(_, index) => {
