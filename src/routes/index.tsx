@@ -15,12 +15,10 @@ import { storageKeys, storagePrefix } from "../constants/storage";
 import type { ColorState } from "../models/color/color-state";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import { extractHue } from "../models/color/create-random-color-state/extract-hue";
-import type { PaletteStep } from "../models/color/generate-palette";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
-import { generatePaletteFromOklchString } from "../models/color/generate-palette-from-oklch-string";
+import { parseColorToPalette } from "../models/color/parse-color-to-palette";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
-import { isValidHex } from "../utils/is-valid-hex";
 
 const defaultTheme = "system" as const satisfies Theme;
 
@@ -31,36 +29,13 @@ const defaultShowEdgeShades = {
 
 type StoredPalette = { name: string; input: string };
 
-function generatePalette(input: string): readonly PaletteStep[] | null {
-	if (isValidHex(input)) {
-		return generatePaletteFromHex(input);
-	}
-
-	if (
-		(input.length === 3 || input.length === 6) &&
-		/^[0-9a-fA-F]+$/.test(input)
-	) {
-		return generatePaletteFromHex(`#${input}`);
-	}
-
-	if (input.startsWith("oklch(")) {
-		try {
-			return generatePaletteFromOklchString(input);
-		} catch {
-			return null;
-		}
-	}
-
-	return null;
-}
-
 const fallbackPalette = generatePaletteFromHex("#f00");
 
 const palettesToColorStates = (
 	palettes: readonly StoredPalette[],
 ): readonly ColorState[] =>
 	palettes.map((p) => {
-		const palette = generatePalette(p.input);
+		const palette = parseColorToPalette(p.input);
 		return {
 			name: p.name,
 			input: p.input,
@@ -226,7 +201,7 @@ export default function Home() {
 		const value = target.value;
 		const color = getColor(index);
 		const setColor = setColorAt(index);
-		const palette = generatePalette(value);
+		const palette = parseColorToPalette(value);
 
 		setColor({
 			...color(),
