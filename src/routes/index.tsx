@@ -5,11 +5,11 @@ import { CssExport } from "../components/css-export";
 import { Header } from "../components/header";
 import { Loading } from "../components/loading";
 import { PaletteBuilder } from "../components/palette-builder";
-import { storagePrefix } from "../constants/storage";
 import { useColors } from "../contexts/colors/use-colors";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
 import { useTheme } from "../contexts/theme/use-theme";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
+import { clearStorage } from "../models/storage/clear-storage";
 
 export default function Home() {
 	const { setColors, loadPalettes } = useColors();
@@ -33,17 +33,7 @@ export default function Home() {
 			return;
 		}
 
-		const keysToRemove: string[] = [];
-		for (let i = 0; i < localStorage.length; i++) {
-			const key = localStorage.key(i);
-			if (key?.startsWith(storagePrefix)) {
-				keysToRemove.push(key);
-			}
-		}
-		for (const key of keysToRemove) {
-			localStorage.removeItem(key);
-		}
-
+		clearStorage();
 		resetTheme();
 		resetShowEdgeShades();
 		setColors([createRandomColorState()]);

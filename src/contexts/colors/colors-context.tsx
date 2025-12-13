@@ -6,12 +6,11 @@ import {
 	type Setter,
 } from "solid-js";
 import { isServer } from "solid-js/web";
-
-import { storageKeys } from "../../constants/storage";
 import type { ColorState } from "../../models/color/color-state";
 import { createRandomColorState } from "../../models/color/create-random-color-state/create-random-color-state";
 import { generatePaletteFromHex } from "../../models/color/generate-palette-from-hex";
 import { parseColorToPalette } from "../../models/color/parse-color-to-palette";
+import { storageKeys } from "../../models/storage/storage";
 
 type StoredPalette = { name: string; input: string };
 

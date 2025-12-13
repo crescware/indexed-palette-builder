@@ -6,9 +6,8 @@ import {
 	type ParentProps,
 } from "solid-js";
 import { isServer } from "solid-js/web";
-
-import { storageKeys } from "../../constants/storage";
 import type { ShowEdgeShadesState } from "../../models/show-edge-shades-state";
+import { storageKeys } from "../../models/storage/storage";
 
 const defaultShowEdgeShades = {
 	isLoading: false,

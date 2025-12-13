@@ -7,7 +7,7 @@ import {
 } from "solid-js";
 import { isServer } from "solid-js/web";
 
-import { storageKeys } from "../../constants/storage";
+import { storageKeys } from "../../models/storage/storage";
 import type { Theme } from "../../models/theme";
 
 const defaultTheme = "system" as const satisfies Theme;
