@@ -42,6 +42,7 @@ export type ColorsContextValue = Readonly<{
 	loadPalettes: () => void;
 	getColor: (i: number) => ColorState;
 	setColorAt: (i: number, given: ColorState) => void;
+	setColorNameAt: (i: number, name: string) => void;
 }>;
 
 export const ColorsContext = createContext<ColorsContextValue>();
@@ -84,6 +85,10 @@ export function ColorsProvider(props: ParentProps) {
 		savePalettes(newColors);
 	};
 
+	const setColorNameAt = (i: number, name: string): void => {
+		setColorAt(i, { ...getColor(i), name });
+	};
+
 	return (
 		<ColorsContext.Provider
 			value={{
@@ -93,6 +98,7 @@ export function ColorsProvider(props: ParentProps) {
 				loadPalettes,
 				getColor,
 				setColorAt,
+				setColorNameAt,
 			}}
 		>
 			{props.children}

@@ -35,6 +35,7 @@ export default function Home() {
 		loadPalettes,
 		getColor,
 		setColorAt,
+		setColorNameAt,
 	} = useColors();
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
@@ -157,10 +158,6 @@ export default function Home() {
 		});
 	});
 
-	const handleChangeName = (index: number, name: string) => {
-		const color = getColor(index);
-		setColorAt(index, { ...color, name });
-	};
 
 	const handleChangeInput = (index: number, e: Event) => {
 		const target = e.target as HTMLInputElement;
@@ -394,7 +391,7 @@ export default function Home() {
 													<ColorPalette
 														color={() => getColor(index)}
 														onChangeName={(name) =>
-															handleChangeName(index, name)
+															setColorNameAt(index, name)
 														}
 														onChangeInput={(e) => handleChangeInput(index, e)}
 														gridColumns={gridColumns}
