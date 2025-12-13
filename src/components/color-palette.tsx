@@ -45,7 +45,7 @@ export function ColorPalette(props: Props) {
 						for="color-input"
 						class="block text-xs font-medium text-gray-700 dark:text-gray-300 text-left"
 					>
-						Hex Color
+						Color
 					</label>
 					<input
 						id="color-input"

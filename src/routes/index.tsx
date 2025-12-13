@@ -14,6 +14,7 @@ import { Header } from "../components/header";
 import { storageKeys, storagePrefix } from "../constants/storage";
 import type { ColorState } from "../models/color/color-state";
 import { generatePaletteFromHex } from "../models/color/generate-palette-from-hex";
+import { generatePaletteFromOklchString } from "../models/color/generate-palette-from-oklch-string";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
 import type { Theme } from "../models/theme";
 import { isValidHex } from "../utils/is-valid-hex";
@@ -30,6 +31,18 @@ type StoredPalette = { name: string; input: string };
 const defaultPalettes: readonly StoredPalette[] = [
 	{ name: "primary", input: "#3b82f6" },
 ];
+
+const randomColors = [
+	"oklch(63.7% 0.237 25.331)",
+	"oklch(68.1% 0.162 75.834)",
+	"oklch(76.8% 0.233 130.85)",
+	"oklch(69.6% 0.17 162.48)",
+	"oklch(71.5% 0.143 215.221)",
+	"oklch(62.3% 0.214 259.815)",
+	"oklch(60.6% 0.25 292.717)",
+	"oklch(66.7% 0.295 322.15)",
+	"oklch(64.5% 0.246 16.439)",
+] as const;
 
 const palettesToColorStates = (
 	palettes: readonly StoredPalette[],
@@ -200,6 +213,17 @@ export default function Home() {
 				input: value,
 				palette: generatePaletteFromHex(value),
 			});
+		} else if (value.startsWith("oklch(")) {
+			try {
+				const palette = generatePaletteFromOklchString(value);
+				setColor({
+					...color(),
+					input: value,
+					palette,
+				});
+			} catch {
+				// Invalid oklch string, ignore
+			}
 		}
 	};
 
@@ -256,12 +280,14 @@ export default function Home() {
 	};
 
 	const handleAddPalette = () => {
+		const randomColor =
+			randomColors[Math.floor(Math.random() * randomColors.length)];
 		const newColors = [
 			...colors(),
 			{
 				name: "primary",
-				input: "#3b82f6",
-				palette: generatePaletteFromHex("#3b82f6"),
+				input: randomColor,
+				palette: generatePaletteFromOklchString(randomColor),
 			},
 		];
 		setColors(newColors);
