@@ -7,11 +7,9 @@ import { Loading } from "../components/loading";
 import { PaletteBuilder } from "../components/palette-builder";
 import { storageKeys, storagePrefix } from "../constants/storage";
 import { useColors } from "../contexts/colors/use-colors";
+import { useTheme } from "../hooks/use-theme";
 import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
-import type { Theme } from "../models/theme";
-
-const defaultTheme = "system" as const satisfies Theme;
 
 const defaultShowEdgeShades = {
 	isLoading: false,
@@ -20,9 +18,9 @@ const defaultShowEdgeShades = {
 
 export default function Home() {
 	const { setColors, loadPalettes } = useColors();
+	const { theme, applyTheme, resetTheme } = useTheme();
 
 	const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
-	const [theme, setTheme] = createSignal<Theme>(defaultTheme);
 
 	const [showEdgeShades, setShowEdgeShades] = createSignal<ShowEdgeShadesState>(
 		{ isLoading: true },
@@ -62,50 +60,14 @@ export default function Home() {
 			localStorage.removeItem(key);
 		}
 
-		applyTheme(defaultTheme);
+		resetTheme();
 		setShowEdgeShades(defaultShowEdgeShades);
 		setColors([createRandomColorState()]);
 		setIsSettingsOpen(false);
 		setIsEditMode(false);
 	};
 
-	const applyTheme = (newTheme: Theme) => {
-		if (isServer) {
-			return;
-		}
-
-		const root = document.documentElement;
-
-		const preferredTheme =
-			newTheme === "system"
-				? window.matchMedia("(prefers-color-scheme: dark)").matches
-					? "dark"
-					: "light"
-				: newTheme;
-
-		if (preferredTheme === "dark") {
-			root.classList.add("dark");
-		} else {
-			root.classList.remove("dark");
-		}
-
-		setTheme(newTheme);
-		localStorage.setItem(storageKeys.theme, newTheme);
-	};
-
 	onMount(() => {
-		// Load settings from localStorage
-		const savedTheme = localStorage.getItem(storageKeys.theme) as Theme | null;
-		if (
-			savedTheme === "light" ||
-			savedTheme === "dark" ||
-			savedTheme === "system"
-		) {
-			applyTheme(savedTheme);
-		} else {
-			applyTheme(theme());
-		}
-
 		const savedShowEdgeShades = localStorage.getItem(
 			storageKeys.showEdgeShades,
 		);
