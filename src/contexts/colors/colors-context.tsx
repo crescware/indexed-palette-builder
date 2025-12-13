@@ -3,16 +3,29 @@ import {
 	createContext,
 	createSignal,
 	type ParentProps,
-	type Setter,
 } from "solid-js";
 import { isServer } from "solid-js/web";
 import type { ColorState } from "../../models/color/color-state";
 import { createRandomColorState } from "../../models/color/create-random-color-state/create-random-color-state";
+import { extractHue } from "../../models/color/create-random-color-state/extract-hue";
 import { generatePaletteFromHex } from "../../models/color/generate-palette-from-hex";
+import { getColorName } from "../../models/color/get-color-name";
 import { parseColorToPalette } from "../../models/color/parse-color-to-palette";
 import { storageKeys } from "../../models/storage/storage";
 
 type StoredPalette = { name: string; input: string };
+
+export type ColorsContextValue = Readonly<{
+	colors: Accessor<readonly ColorState[]>;
+	loadPalettes: () => void;
+	resetColors: () => void;
+	addColor: () => void;
+	deleteColor: (index: number) => void;
+	reorderColors: (fromIndex: number, toIndex: number) => void;
+	getColor: (i: number) => ColorState;
+	setColorNameAt: (i: number, name: string) => void;
+	setColorValueAt: (i: number, value: string) => void;
+}>;
 
 const fallbackPalette = generatePaletteFromHex("#f00");
 
@@ -33,16 +46,6 @@ const storedPalettesToColorStates = (
 			errorType: palette ? null : "ParseError",
 		};
 	});
-
-export type ColorsContextValue = Readonly<{
-	colors: Accessor<readonly ColorState[]>;
-	setColors: Setter<readonly ColorState[]>;
-	savePalettes: (colorStates: readonly ColorState[]) => void;
-	loadPalettes: () => void;
-	getColor: (i: number) => ColorState;
-	setColorNameAt: (i: number, name: string) => void;
-	setColorValueAt: (i: number, value: string) => void;
-}>;
 
 export const ColorsContext = createContext<ColorsContextValue>();
 
@@ -76,6 +79,44 @@ export function ColorsProvider(props: ParentProps) {
 		}
 	};
 
+	const resetColors = (): void => {
+		setColors([createRandomColorState()]);
+	};
+
+	const addColor = (): void => {
+		const currentColors = colors();
+		const existingNames = currentColors.map((c) => c.name);
+		const lastColor = currentColors[currentColors.length - 1];
+		const lastHue = lastColor ? extractHue(lastColor.input) : null;
+
+		const newColors = [
+			...currentColors,
+			createRandomColorState(existingNames, lastHue),
+		];
+		setColors(newColors);
+		savePalettes(newColors);
+	};
+
+	const deleteColor = (index: number): void => {
+		if (colors().length === 1) {
+			throw new Error("Cannot delete the last palette");
+		}
+		const name = getColorName(getColor(index));
+		if (confirm(`Are you sure you want to delete "${name}"?`)) {
+			const newColors = colors().filter((_, i) => i !== index);
+			setColors(newColors);
+			savePalettes(newColors);
+		}
+	};
+
+	const reorderColors = (fromIndex: number, toIndex: number): void => {
+		const newColors = [...colors()];
+		const [removed] = newColors.splice(fromIndex, 1);
+		newColors.splice(toIndex, 0, removed);
+		setColors(newColors);
+		savePalettes(newColors);
+	};
+
 	const getColor = (i: number): ColorState => colors()[i];
 
 	const setColorAt = (i: number, given: ColorState): void => {
@@ -103,9 +144,11 @@ export function ColorsProvider(props: ParentProps) {
 		<ColorsContext.Provider
 			value={{
 				colors,
-				setColors,
-				savePalettes,
 				loadPalettes,
+				resetColors,
+				addColor,
+				deleteColor,
+				reorderColors,
 				getColor,
 				setColorNameAt,
 				setColorValueAt,

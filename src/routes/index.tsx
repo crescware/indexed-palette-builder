@@ -8,11 +8,10 @@ import { PaletteBuilder } from "../components/palette-builder";
 import { useColors } from "../contexts/colors/use-colors";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
 import { useTheme } from "../contexts/theme/use-theme";
-import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
 import { clearStorage } from "../models/storage/clear-storage";
 
 export default function Home() {
-	const { setColors, loadPalettes } = useColors();
+	const { loadPalettes, resetColors } = useColors();
 	const { resetTheme } = useTheme();
 	const { showEdgeShades, resetShowEdgeShades } = useShowEdgeShades();
 
@@ -40,7 +39,7 @@ export default function Home() {
 		clearStorage();
 		resetTheme();
 		resetShowEdgeShades();
-		setColors([createRandomColorState()]);
+		resetColors();
 		setIsSettingsOpen(false);
 		setIsEditMode(false);
 	};

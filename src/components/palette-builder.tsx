@@ -4,9 +4,6 @@ import { createSignal, Index } from "solid-js";
 
 import { useColors } from "../contexts/colors/use-colors";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
-import { createRandomColorState } from "../models/color/create-random-color-state/create-random-color-state";
-import { extractHue } from "../models/color/create-random-color-state/extract-hue";
-import { getColorName } from "../models/color/get-color-name";
 import { PaletteRow } from "./palette-row";
 
 type Props = Readonly<{
@@ -14,7 +11,7 @@ type Props = Readonly<{
 }>;
 
 export function PaletteBuilder(props: Props) {
-	const { colors, setColors, savePalettes, getColor } = useColors();
+	const { colors, addColor, deleteColor, reorderColors } = useColors();
 	const { showEdgeShades } = useShowEdgeShades();
 
 	const [draggedIndex, setDraggedIndex] = createSignal<number | null>(null);
@@ -24,17 +21,7 @@ export function PaletteBuilder(props: Props) {
 	let paletteContainerRef: HTMLDivElement | undefined;
 
 	const handleAddPalette = () => {
-		const currentColors = colors();
-		const existingNames = currentColors.map((c) => c.name);
-		const lastColor = currentColors[currentColors.length - 1];
-		const lastHue = lastColor ? extractHue(lastColor.input) : null;
-
-		const newColors = [
-			...currentColors,
-			createRandomColorState(existingNames, lastHue),
-		];
-		setColors(newColors);
-		savePalettes(newColors);
+		addColor();
 
 		requestAnimationFrame(() => {
 			if (paletteContainerRef) {
@@ -54,15 +41,7 @@ export function PaletteBuilder(props: Props) {
 	};
 
 	const handleDeletePalette = (index: number) => {
-		if (colors().length === 1) {
-			throw new Error("Cannot delete the last palette");
-		}
-		const name = getColorName(getColor(index));
-		if (confirm(`Are you sure you want to delete "${name}"?`)) {
-			const newColors = colors().filter((_, i) => i !== index);
-			setColors(newColors);
-			savePalettes(newColors);
-		}
+		deleteColor(index);
 	};
 
 	const handleDragStart = (index: number) => {
@@ -91,11 +70,7 @@ export function PaletteBuilder(props: Props) {
 			return;
 		}
 
-		const newColors = [...colors()];
-		const [removed] = newColors.splice(dragged, 1);
-		newColors.splice(targetIndex, 0, removed);
-		setColors(newColors);
-		savePalettes(newColors);
+		reorderColors(dragged, targetIndex);
 
 		setDraggedIndex(null);
 		setDropTargetIndex(null);
