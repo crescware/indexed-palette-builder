@@ -43,7 +43,7 @@ export function CssExport() {
 				<button
 					type="button"
 					onClick={copyToClipboard}
-					class="p-1.5 relative w-7 h-7 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+					class={`p-1.5 relative w-7 h-7 text-gray-500 dark:text-gray-400 rounded transition-colors ${showCopied() ? "" : "hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
 					aria-label="Copy CSS"
 				>
 					<span
