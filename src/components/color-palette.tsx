@@ -96,7 +96,7 @@ export function ColorPalette(props: Props) {
 							);
 						})}
 					</div>
-					<Show when={isColorInputFocused()}>
+					<Show when={isColorInputFocused() && props.color().errorType !== "ParseError"}>
 						{(() => {
 							const closestIndex = props
 								.displayedPalette()
