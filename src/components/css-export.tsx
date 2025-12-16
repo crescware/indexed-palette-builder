@@ -1,4 +1,4 @@
-import { Copy } from "lucide-solid";
+import { Check, Copy } from "lucide-solid";
 import { createMemo, createSignal } from "solid-js";
 
 import { useColors } from "../contexts/colors/use-colors";
@@ -7,6 +7,7 @@ import { getColorName } from "../models/color/get-color-name";
 export function CssExport() {
 	const { colors } = useColors();
 	const [showCopied, setShowCopied] = createSignal(false);
+	const [isReturning, setIsReturning] = createSignal(false);
 
 	const cssOutput = createMemo(() => {
 		return colors()
@@ -22,8 +23,12 @@ export function CssExport() {
 
 	const copyToClipboard = () => {
 		navigator.clipboard.writeText(cssOutput());
+		setIsReturning(false);
 		setShowCopied(true);
-		setTimeout(() => setShowCopied(false), 1500);
+		setTimeout(() => {
+			setIsReturning(true);
+			setShowCopied(false);
+		}, 1500);
 	};
 
 	return (
@@ -35,24 +40,25 @@ export function CssExport() {
 				>
 					CSS Variables
 				</label>
-				<div class="relative">
-					<button
-						type="button"
-						onClick={copyToClipboard}
-						class="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
-						aria-label="Copy CSS"
+				<button
+					type="button"
+					onClick={copyToClipboard}
+					class="p-1.5 relative w-7 h-7 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+					aria-label="Copy CSS"
+				>
+					<span
+						class={`absolute inset-0 flex items-center justify-center ${isReturning() ? "transition-opacity duration-200" : ""}`}
+						style={{ opacity: showCopied() ? 0 : 1 }}
 					>
 						<Copy size={16} />
-					</button>
-					<span
-						role="status"
-						aria-live="polite"
-						class="absolute right-0 top-full mt-1 px-2 py-1 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded whitespace-nowrap transition-opacity duration-300"
-						style={{ opacity: showCopied() ? 1 : 0, "pointer-events": "none" }}
-					>
-						Copied
 					</span>
-				</div>
+					<span
+						class={`absolute inset-0 flex items-center justify-center ${isReturning() ? "transition-opacity duration-200" : ""}`}
+						style={{ opacity: showCopied() ? 1 : 0 }}
+					>
+						<Check size={16} />
+					</span>
+				</button>
 			</div>
 			<textarea
 				id="css-output"
