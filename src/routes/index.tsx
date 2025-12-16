@@ -8,7 +8,7 @@ export default function Home() {
 	const { isLoading } = useShowEdgeShades();
 
 	return (
-		<div class="flex justify-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
+		<div class="flex justify-center h-screen bg-[var(--app-bg)] text-gray-700 dark:text-gray-300">
 			<Loading enabled={isLoading()}>
 				<main class="text-center h-full flex flex-col max-w-7xl w-full animate-fade-in">
 					<Header />
