@@ -16,8 +16,6 @@ type Props = Readonly<{
 	colorsLength: Accessor<number>;
 	onDragStart: (e: DragEvent, index: number) => void;
 	onDragEnd: () => void;
-	onDragOver: (e: DragEvent, index: number) => void;
-	onDrop: (e: DragEvent, index: number) => void;
 	onDelete: (index: number) => void;
 }>;
 
@@ -71,11 +69,7 @@ export function PaletteRow(props: Props) {
 	});
 
 	return (
-		// biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop requires these handlers
-		<div
-			onDragOver={(e) => props.onDragOver(e, props.index)}
-			onDrop={(e) => props.onDrop(e, props.index)}
-		>
+		<div>
 			<div
 				class={`h-1 rounded-full transition-colors ${showDropBefore() ? "bg-sky-500" : "bg-transparent"}`}
 			/>

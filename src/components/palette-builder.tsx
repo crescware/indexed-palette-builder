@@ -59,35 +59,55 @@ export function PaletteBuilder() {
 		setDropTargetIndex(null);
 	};
 
-	const handleDragOver = (e: DragEvent, index: number) => {
+	const handleDragOver = (e: DragEvent) => {
 		e.preventDefault();
 		const dragged = draggedIndex();
-		if (dragged === null || dragged === index) {
+		if (dragged === null || !paletteContainerRef) {
 			setDropTargetIndex(null);
 			return;
 		}
-		setDropTargetIndex(index);
+
+		const rows = paletteContainerRef.querySelectorAll<HTMLElement>(
+			":scope > div:not(:last-child)",
+		);
+		const mouseY = e.clientY;
+
+		for (let i = 0; i < rows.length; i++) {
+			const rect = rows[i].getBoundingClientRect();
+			const midY = rect.top + rect.height / 2;
+			if (mouseY < midY) {
+				setDropTargetIndex(i === dragged ? null : i);
+				return;
+			}
+		}
+		// Mouse is below all rows
+		const lastIndex = rows.length - 1;
+		setDropTargetIndex(lastIndex === dragged ? null : lastIndex);
 	};
 
-	const handleDrop = (e: DragEvent, targetIndex: number) => {
+	const handleDrop = (e: DragEvent) => {
 		e.preventDefault();
 		const dragged = draggedIndex();
-		if (dragged === null || dragged === targetIndex) {
+		const target = dropTargetIndex();
+		if (dragged === null || target === null) {
 			return;
 		}
 
-		reorderColors(dragged, targetIndex);
+		reorderColors(dragged, target);
 
 		setDraggedIndex(null);
 		setDropTargetIndex(null);
 	};
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop container
 		<div
 			ref={(el) => {
 				paletteContainerRef = el;
 			}}
 			class="flex flex-col gap-5 min-h-0 overflow-y-auto px-1 pb-2"
+			onDragOver={handleDragOver}
+			onDrop={handleDrop}
 		>
 			<Index each={colors()}>
 				{(_, index) => (
@@ -100,8 +120,6 @@ export function PaletteBuilder() {
 						colorsLength={() => colors().length}
 						onDragStart={handleDragStart}
 						onDragEnd={handleDragEnd}
-						onDragOver={handleDragOver}
-						onDrop={handleDrop}
 						onDelete={handleDeletePalette}
 					/>
 				)}
