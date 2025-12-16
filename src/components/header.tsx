@@ -10,7 +10,7 @@ export function Header() {
 	const { isEditMode, toggleEditMode } = useEditMode();
 
 	return (
-		<header class="flex items-center justify-between py-6 px-4">
+		<header class="flex items-center justify-between p-6">
 			<h1 class="text-sm text-gray-600 dark:text-gray-400 uppercase tracking-widest">
 				Indexed Palette Builder
 			</h1>

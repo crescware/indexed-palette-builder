@@ -105,7 +105,7 @@ export function PaletteBuilder() {
 			ref={(el) => {
 				paletteContainerRef = el;
 			}}
-			class="flex flex-col gap-5 min-h-0 overflow-y-auto px-1 pb-2"
+			class="flex flex-col gap-5 min-h-0 overflow-y-auto px-6"
 			onDragOver={handleDragOver}
 			onDrop={handleDrop}
 		>
