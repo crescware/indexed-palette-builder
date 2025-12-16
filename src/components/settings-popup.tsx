@@ -1,28 +1,54 @@
 import { X } from "lucide-solid";
-import type { Accessor, Setter } from "solid-js";
 import { Show } from "solid-js";
+import { isServer } from "solid-js/web";
 
-import type { ShowEdgeShadesState } from "../models/show-edge-shades-state";
-import type { Theme } from "../models/theme";
+import { useColors } from "../contexts/colors/use-colors";
+import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
+import { useSettings } from "../contexts/settings/use-settings";
+import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
+import { useTheme } from "../contexts/theme/use-theme";
+import { clearStorage } from "../models/storage/clear-storage";
 
-type Props = Readonly<{
-	isOpen: Accessor<boolean>;
-	setIsOpen: Setter<boolean>;
-	theme: Accessor<Theme>;
-	applyTheme: (theme: Theme) => void;
-	showEdgeShades: Accessor<ShowEdgeShadesState>;
-	onChangeShowEdgeShades: (value: boolean) => void;
-	onResetSettings: () => void;
-}>;
+export function SettingsPopup() {
+	const { theme, applyTheme, resetTheme } = useTheme();
+	const { showEdgeShades, setShowEdgeShades, resetShowEdgeShades } =
+		useShowEdgeShades();
+	const { isSettingsOpen, closeSettings } = useSettings();
+	const { resetColors } = useColors();
+	const { exitEditMode } = useEditMode();
 
-export function SettingsPopup(props: Props) {
 	const isShowEdgeShadesChecked = () => {
-		const state = props.showEdgeShades();
+		const state = showEdgeShades();
 		return !state.isLoading && state.value;
 	};
 
+	const handleResetSettings = (): void => {
+		if (isServer) {
+			return;
+		}
+
+		if (
+			!confirm(
+				[
+					"Are you sure you want to reset all data?",
+					"This will delete all palettes and settings.",
+					"This action cannot be undone.",
+				].join(" "),
+			)
+		) {
+			return;
+		}
+
+		clearStorage();
+		resetTheme();
+		resetShowEdgeShades();
+		resetColors();
+		closeSettings();
+		exitEditMode();
+	};
+
 	return (
-		<Show when={props.isOpen()}>
+		<Show when={isSettingsOpen()}>
 			<div class="absolute top-[calc(100%+0.5rem)] right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 w-64 z-50 flex flex-col gap-3">
 				<div class="flex justify-between items-center">
 					<h2 class="text-base font-semibold text-gray-800 dark:text-gray-200">
@@ -30,7 +56,7 @@ export function SettingsPopup(props: Props) {
 					</h2>
 					<button
 						type="button"
-						onClick={() => props.setIsOpen(false)}
+						onClick={closeSettings}
 						class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
 						aria-label="Close settings"
 					>
@@ -48,8 +74,8 @@ export function SettingsPopup(props: Props) {
 									type="radio"
 									name="theme"
 									value="light"
-									checked={props.theme() === "light"}
-									onInput={() => props.applyTheme("light")}
+									checked={theme() === "light"}
+									onInput={() => applyTheme("light")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
 								<span class="text-sm text-gray-700 dark:text-gray-300">
@@ -61,8 +87,8 @@ export function SettingsPopup(props: Props) {
 									type="radio"
 									name="theme"
 									value="dark"
-									checked={props.theme() === "dark"}
-									onInput={() => props.applyTheme("dark")}
+									checked={theme() === "dark"}
+									onInput={() => applyTheme("dark")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
 								<span class="text-sm text-gray-700 dark:text-gray-300">
@@ -74,8 +100,8 @@ export function SettingsPopup(props: Props) {
 									type="radio"
 									name="theme"
 									value="system"
-									checked={props.theme() === "system"}
-									onInput={() => props.applyTheme("system")}
+									checked={theme() === "system"}
+									onInput={() => applyTheme("system")}
 									class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500"
 								/>
 								<span class="text-sm text-gray-700 dark:text-gray-300">
@@ -89,10 +115,8 @@ export function SettingsPopup(props: Props) {
 							<input
 								type="checkbox"
 								checked={isShowEdgeShadesChecked()}
-								disabled={props.showEdgeShades().isLoading}
-								onInput={(e) =>
-									props.onChangeShowEdgeShades(e.currentTarget.checked)
-								}
+								disabled={showEdgeShades().isLoading}
+								onInput={(e) => setShowEdgeShades(e.currentTarget.checked)}
 								class="w-4 h-4 text-sky-600 border-gray-300 dark:border-gray-600 rounded focus:ring-sky-500 disabled:opacity-50"
 							/>
 							<span class="text-sm text-gray-700 dark:text-gray-300">
@@ -103,7 +127,7 @@ export function SettingsPopup(props: Props) {
 				</div>
 				<button
 					type="button"
-					onClick={props.onResetSettings}
+					onClick={handleResetSettings}
 					class="w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 border border-red-600 dark:border-red-400 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100 dark:active:bg-red-900 rounded-md transition-colors"
 				>
 					Reset all data

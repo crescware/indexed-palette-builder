@@ -1,4 +1,4 @@
-import { storageKeys } from "../constants/storage";
+import { storageKeys } from "../models/storage/storage";
 
 (() => {
 	try {
