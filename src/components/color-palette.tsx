@@ -40,7 +40,7 @@ export function ColorPalette(props: Props) {
 						value={props.color().name}
 						onInput={(e) => props.onChangeName(e.target.value)}
 						disabled={props.isEditMode()}
-						class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md outline-1 outline-transparent focus:outline-blue-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 						placeholder="primary"
 					/>
 				</div>
@@ -64,7 +64,7 @@ export function ColorPalette(props: Props) {
 						onFocus={() => setIsColorInputFocused(true)}
 						onBlur={() => setIsColorInputFocused(false)}
 						disabled={props.isEditMode()}
-						class="w-full px-2 py-1 text-sm font-mono border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="w-full px-2 py-1 text-sm font-mono border border-gray-300 dark:border-gray-700 rounded-md outline-1 outline-transparent focus:outline-blue-500 shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 						placeholder="#000000"
 					/>
 				</div>
