@@ -27,7 +27,7 @@ export function PaletteBuilder() {
 				);
 				const lastPalette = paletteItems[paletteItems.length - 1];
 				if (lastPalette) {
-					const gap = 12; // gap-3 = 0.75rem = 12px
+					const gap = 20; // gap-5 = 1.25rem = 20px
 					paletteContainerRef.scrollBy({
 						top: lastPalette.getBoundingClientRect().height + gap,
 						behavior: "instant",
@@ -78,7 +78,7 @@ export function PaletteBuilder() {
 			ref={(el) => {
 				paletteContainerRef = el;
 			}}
-			class="flex flex-col gap-3 min-h-0 overflow-y-auto px-1"
+			class="flex flex-col gap-5 min-h-0 overflow-y-auto px-1 pb-2"
 		>
 			<Index each={colors()}>
 				{(_, index) => (

@@ -23,7 +23,7 @@ export function CssExport() {
 	};
 
 	return (
-		<div class="flex flex-col min-h-0 gap-2">
+		<div class="flex flex-col min-h-0 gap-3 lg:pl-6 lg:border-l border-gray-200 dark:border-gray-800">
 			<div class="flex justify-between items-center">
 				<label
 					for="css-output"
