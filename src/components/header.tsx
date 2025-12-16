@@ -2,6 +2,7 @@ import { Settings } from "lucide-solid";
 
 import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useSettings } from "../contexts/settings/use-settings";
+import { Button } from "./button";
 import { SettingsPopup } from "./settings-popup";
 
 export function Header() {
@@ -18,21 +19,12 @@ export function Header() {
 				class="relative flex items-center gap-2"
 				ref={setSettingsContainerRef}
 			>
-				<button
-					type="button"
-					onClick={toggleEditMode}
-					class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-700 active:text-gray-900 dark:active:text-gray-100 rounded-lg transition-colors"
-				>
+				<Button onClick={toggleEditMode} class="px-3 py-1.5 text-sm">
 					{isEditMode() ? "Done" : "Edit"}
-				</button>
-				<button
-					type="button"
-					onClick={toggleSettings}
-					class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-700 active:text-gray-900 dark:active:text-gray-100 rounded-lg transition-colors"
-					aria-label="Settings"
-				>
+				</Button>
+				<Button onClick={toggleSettings} class="p-2" aria-label="Settings">
 					<Settings size={20} />
-				</button>
+				</Button>
 
 				<SettingsPopup />
 			</div>

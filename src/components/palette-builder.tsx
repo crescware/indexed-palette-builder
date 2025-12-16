@@ -4,6 +4,7 @@ import { createSignal, Index } from "solid-js";
 import { useColors } from "../contexts/colors/use-colors";
 import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
+import { Button } from "./button";
 import { PaletteRow } from "./palette-row";
 
 export function PaletteBuilder() {
@@ -97,14 +98,13 @@ export function PaletteBuilder() {
 					/>
 				)}
 			</Index>
-			<button
-				type="button"
+			<Button
 				onClick={handleAddPalette}
-				class="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-700 active:text-gray-900 dark:active:text-gray-100 transition-colors"
+				class="w-full flex items-center justify-center gap-2 py-3"
 			>
 				<Plus size={20} />
 				<span class="text-sm">Add Palette</span>
-			</button>
+			</Button>
 		</div>
 	);
 }
