@@ -1,5 +1,5 @@
 import type { Accessor } from "solid-js";
-import { createSignal, Show } from "solid-js";
+import { createMemo, createSignal, Show } from "solid-js";
 
 import type { ColorState } from "../models/color/color-state";
 import type { PaletteStep } from "../models/color/generate-palette";
@@ -18,6 +18,23 @@ type Props = Readonly<{
 
 export function ColorPalette(props: Props) {
 	const [isColorInputFocused, setIsColorInputFocused] = createSignal(false);
+
+	const closestSwatchData = createMemo(() => {
+		const palette = props.displayedPalette();
+		const closestIndex = palette.findIndex((item) => item.isClosest);
+		if (closestIndex === -1) return null;
+		return {
+			index: closestIndex,
+			hex: palette[closestIndex].hex,
+		};
+	});
+
+	const shouldShowHighlight = createMemo(
+		() =>
+			isColorInputFocused() &&
+			props.color().errorType !== "ParseError" &&
+			closestSwatchData() !== null,
+	);
 
 	return (
 		<div class="flex flex-col gap-3 min-w-0">
@@ -96,31 +113,28 @@ export function ColorPalette(props: Props) {
 							);
 						})}
 					</div>
-					<Show when={isColorInputFocused() && props.color().errorType !== "ParseError"}>
-						{(() => {
-							const closestIndex = props
-								.displayedPalette()
-								.findIndex((item) => item.isClosest);
-							if (closestIndex === -1) return null;
-							const closest = props.displayedPalette()[closestIndex];
+					<Show when={closestSwatchData()}>
+						{(data) => {
 							const columns = props.gridColumns();
 							const expand = 3;
 							const borderWidth = 4;
-							const offset = expand + borderWidth;
+							const expandedOffset = expand + borderWidth;
+							const offset = () => (shouldShowHighlight() ? expandedOffset : 0);
 							return (
 								<div
-									class="absolute pointer-events-none rounded-xl"
+									class="absolute pointer-events-none rounded-xl transition-all duration-200"
 									style={{
-										top: `-${offset}px`,
-										bottom: `-${offset}px`,
-										left: `calc(${(closestIndex / columns) * 100}% - ${offset}px)`,
-										width: `calc(${(1 / columns) * 100}% + ${offset * 2}px)`,
-										"background-color": closest.hex,
-										border: `${borderWidth}px solid var(--app-bg)`,
+										top: `-${offset()}px`,
+										bottom: `-${offset()}px`,
+										left: `calc(${(data().index / columns) * 100}% - ${offset()}px)`,
+										width: `calc(${(1 / columns) * 100}% + ${offset() * 2}px)`,
+										"background-color": data().hex,
+										border: `${borderWidth}px solid ${shouldShowHighlight() ? "var(--app-bg)" : "transparent"}`,
+										opacity: shouldShowHighlight() ? 1 : 0,
 									}}
 								/>
 							);
-						})()}
+						}}
 					</Show>
 				</div>
 
