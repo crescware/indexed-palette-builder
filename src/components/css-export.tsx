@@ -32,8 +32,8 @@ export function CssExport() {
 	};
 
 	return (
-		<div class="flex flex-col min-h-0 gap-3 lg:border-l border-gray-200 dark:border-gray-800 px-6">
-			<div class="flex justify-between items-center">
+		<div class="flex flex-col min-h-0 gap-3 lg:border-l border-gray-200 dark:border-gray-800 pl-2 pr-6">
+			<div class="flex justify-between items-center pl-4">
 				<label
 					for="css-output"
 					class="block text-xs font-medium text-gray-700 dark:text-gray-300"
@@ -64,7 +64,7 @@ export function CssExport() {
 				id="css-output"
 				readonly
 				textContent={cssOutput()}
-				class="w-full flex-1 min-h-0 p-3 font-mono text-xs border border-gray-300 dark:border-gray-700 rounded-md focus:ring-sky-500 focus:border-sky-500 shadow-sm resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+				class="w-full flex-1 min-h-0 px-4 py-1 font-mono text-xs rounded-md outline-1 outline-transparent focus:outline-blue-500 resize-none bg-[var(--app-bg)] focus:bg-white dark:focus:bg-gray-900 text-gray-500 dark:text-gray-400 focus:text-gray-900 dark:focus:text-gray-100 transition-colors"
 			/>
 		</div>
 	);
