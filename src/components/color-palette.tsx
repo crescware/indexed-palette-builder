@@ -5,6 +5,7 @@ import type { ColorState } from "../models/color/color-state";
 import type { PaletteStep } from "../models/color/generate-palette";
 
 type Props = Readonly<{
+	index: number;
 	color: Accessor<ColorState>;
 	onChangeName: (name: string) => void;
 	onChangeInput: (value: string) => void;
@@ -17,18 +18,22 @@ type Props = Readonly<{
 
 export function ColorPalette(props: Props) {
 	return (
-		<div class="flex gap-3 items-center min-w-0">
-			{/* Input fields on the left */}
-			<div class="flex-shrink-0 w-36 flex flex-col gap-2">
-				<div class="flex flex-col gap-1">
+		<div class="flex flex-col gap-3 min-w-0">
+			{/* Input fields arranged horizontally */}
+			<div class="flex gap-2">
+				<div class="w-28 flex flex-col gap-1">
 					<label
-						for="name-input"
-						class="block text-xs font-medium text-gray-700 dark:text-gray-300 text-left"
+						for={`name-input-${props.index}`}
+						class={
+							props.index === 0
+								? `block text-xs font-medium text-left ${props.isEditMode() ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}`
+								: "sr-only"
+						}
 					>
 						Name
 					</label>
 					<input
-						id="name-input"
+						id={`name-input-${props.index}`}
 						type="text"
 						value={props.color().name}
 						onInput={(e) => props.onChangeName(e.target.value)}
@@ -38,15 +43,19 @@ export function ColorPalette(props: Props) {
 					/>
 				</div>
 
-				<div class="flex flex-col gap-1">
+				<div class="w-56 flex flex-col gap-1">
 					<label
-						for="color-input"
-						class="block text-xs font-medium text-gray-700 dark:text-gray-300 text-left"
+						for={`color-input-${props.index}`}
+						class={
+							props.index === 0
+								? `block text-xs font-medium text-left ${props.isEditMode() ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}`
+								: "sr-only"
+						}
 					>
 						Color
 					</label>
 					<input
-						id="color-input"
+						id={`color-input-${props.index}`}
 						type="text"
 						value={props.color().input}
 						onInput={(e) => props.onChangeInput(e.target.value)}
@@ -57,8 +66,8 @@ export function ColorPalette(props: Props) {
 				</div>
 			</div>
 
-			{/* Color squares arranged horizontally */}
-			<div class="flex-1 flex flex-col items-center min-w-0 gap-2">
+			{/* Color swatches below */}
+			<div class="flex flex-col items-center gap-2">
 				<div
 					class="w-full grid gap-[1%]"
 					style={{

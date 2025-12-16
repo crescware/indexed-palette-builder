@@ -97,6 +97,7 @@ export function PaletteRow(props: Props) {
 				</Show>
 				<div class="flex-1">
 					<ColorPalette
+						index={props.index}
 						color={() => getColor(props.index)}
 						onChangeName={(name) => setColorNameAt(props.index, name)}
 						onChangeInput={(value) => setColorValueAt(props.index, value)}
