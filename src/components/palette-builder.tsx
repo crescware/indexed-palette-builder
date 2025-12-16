@@ -42,7 +42,15 @@ export function PaletteBuilder() {
 		deleteColor(index);
 	};
 
-	const handleDragStart = (index: number) => {
+	const handleDragStart = (e: DragEvent, index: number) => {
+		if (e.dataTransfer) {
+			// setData() must be called first to properly initialize the DataTransfer object.
+			// Without this, the browser may briefly show the default copy cursor before
+			// effectAllowed takes effect. Once initialized, effectAllowed = "move" is
+			// applied immediately, showing the move cursor from the start.
+			e.dataTransfer.setData("text/plain", index.toString());
+			e.dataTransfer.effectAllowed = "move";
+		}
 		setDraggedIndex(index);
 	};
 

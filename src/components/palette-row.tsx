@@ -14,7 +14,7 @@ type Props = Readonly<{
 	isEditMode: Accessor<boolean>;
 	showEdgeShades: Accessor<ShowEdgeShadesState>;
 	colorsLength: Accessor<number>;
-	onDragStart: (index: number) => void;
+	onDragStart: (e: DragEvent, index: number) => void;
 	onDragEnd: () => void;
 	onDragOver: (e: DragEvent, index: number) => void;
 	onDrop: (e: DragEvent, index: number) => void;
@@ -83,12 +83,12 @@ export function PaletteRow(props: Props) {
 			<div
 				class={`flex items-center gap-4 ${props.draggedIndex() === props.index ? "opacity-30" : ""}`}
 				draggable={props.isEditMode()}
-				onDragStart={() => props.onDragStart(props.index)}
+				onDragStart={(e) => props.onDragStart(e, props.index)}
 				onDragEnd={props.onDragEnd}
 			>
 				<Show when={props.isEditMode()}>
 					<span
-						class="text-gray-500 dark:text-gray-400 cursor-grab active:cursor-grabbing"
+						class="text-gray-500 dark:text-gray-400"
 						role="img"
 						aria-label="Reorder"
 					>
