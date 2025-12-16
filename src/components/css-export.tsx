@@ -1,10 +1,12 @@
-import { createMemo } from "solid-js";
+import { Copy } from "lucide-solid";
+import { createMemo, createSignal } from "solid-js";
 
 import { useColors } from "../contexts/colors/use-colors";
 import { getColorName } from "../models/color/get-color-name";
 
 export function CssExport() {
 	const { colors } = useColors();
+	const [showCopied, setShowCopied] = createSignal(false);
 
 	const cssOutput = createMemo(() => {
 		return colors()
@@ -20,6 +22,8 @@ export function CssExport() {
 
 	const copyToClipboard = () => {
 		navigator.clipboard.writeText(cssOutput());
+		setShowCopied(true);
+		setTimeout(() => setShowCopied(false), 1500);
 	};
 
 	return (
@@ -31,13 +35,24 @@ export function CssExport() {
 				>
 					CSS Variables
 				</label>
-				<button
-					type="button"
-					onClick={copyToClipboard}
-					class="px-2 py-1 text-xs bg-sky-600 dark:bg-sky-700 text-white rounded hover:bg-sky-700 dark:hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
-				>
-					Copy CSS
-				</button>
+				<div class="relative">
+					<button
+						type="button"
+						onClick={copyToClipboard}
+						class="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+						aria-label="Copy CSS"
+					>
+						<Copy size={16} />
+					</button>
+					<span
+						role="status"
+						aria-live="polite"
+						class="absolute right-0 top-full mt-1 px-2 py-1 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded whitespace-nowrap transition-opacity duration-300"
+						style={{ opacity: showCopied() ? 1 : 0, "pointer-events": "none" }}
+					>
+						Copied
+					</span>
+				</div>
 			</div>
 			<textarea
 				id="css-output"
