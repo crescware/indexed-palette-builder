@@ -21,14 +21,14 @@ export function Header() {
 				<button
 					type="button"
 					onClick={toggleEditMode}
-					class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
+					class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-700 active:text-gray-900 dark:active:text-gray-100 rounded-lg transition-colors"
 				>
 					{isEditMode() ? "Done" : "Edit"}
 				</button>
 				<button
 					type="button"
 					onClick={toggleSettings}
-					class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
+					class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-700 active:text-gray-900 dark:active:text-gray-100 rounded-lg transition-colors"
 					aria-label="Settings"
 				>
 					<Settings size={20} />

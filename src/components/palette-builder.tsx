@@ -100,7 +100,7 @@ export function PaletteBuilder() {
 			<button
 				type="button"
 				onClick={handleAddPalette}
-				class="w-full flex flex-col items-center gap-1 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 active:border-gray-500 active:text-gray-700 dark:active:border-gray-400 dark:active:text-gray-200 transition-colors"
+				class="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-700 active:text-gray-900 dark:active:text-gray-100 transition-colors"
 			>
 				<Plus size={20} />
 				<span class="text-sm">Add Palette</span>
