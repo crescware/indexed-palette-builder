@@ -69,23 +69,32 @@ export function ColorPalette(props: Props) {
 			{/* Color swatches below */}
 			<div class="flex flex-col items-center gap-2">
 				<div
-					class="w-full grid gap-[1%]"
+					class="w-full grid gap-0"
 					style={{
 						"grid-template-columns": `repeat(${props.gridColumns()}, 1fr)`,
 					}}
 				>
-					{props.displayedPalette().map((item) => (
-						<div class="flex flex-col items-center gap-1">
-							<div
-								class="aspect-square rounded transition-all w-full"
-								style={{ "background-color": item.hex }}
-								title={`${item.shade}: ${item.hex}`}
-							/>
-							{item.isClosest && (
-								<div class="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
-							)}
-						</div>
-					))}
+					{props.displayedPalette().map((item, i) => {
+						const isFirst = i === 0;
+						const isLast = i === props.displayedPalette().length - 1;
+						const roundedClass = isFirst
+							? "rounded-l-xl"
+							: isLast
+								? "rounded-r-xl"
+								: "";
+						return (
+							<div class="flex flex-col items-center gap-1">
+								<div
+									class={`aspect-square transition-all w-full ${roundedClass}`}
+									style={{ "background-color": item.hex }}
+									title={`${item.shade}: ${item.hex}`}
+								/>
+								{item.isClosest && (
+									<div class="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
+								)}
+							</div>
+						);
+					})}
 				</div>
 
 				{/* Reserved area for warning messages */}
