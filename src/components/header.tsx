@@ -2,6 +2,7 @@ import { Settings } from "lucide-solid";
 
 import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useSettings } from "../contexts/settings/use-settings";
+import { Button } from "./button";
 import { SettingsPopup } from "./settings-popup";
 
 export function Header() {
@@ -9,8 +10,8 @@ export function Header() {
 	const { isEditMode, toggleEditMode } = useEditMode();
 
 	return (
-		<header class="flex items-center justify-between py-6 px-4">
-			<h1 class="max-6-xs text-2xl text-gray-800 dark:text-gray-200 font-thin uppercase">
+		<header class="flex items-center justify-between p-6">
+			<h1 class="text-sm text-gray-600 dark:text-gray-400 uppercase tracking-widest">
 				Indexed Palette Builder
 			</h1>
 
@@ -18,21 +19,12 @@ export function Header() {
 				class="relative flex items-center gap-2"
 				ref={setSettingsContainerRef}
 			>
-				<button
-					type="button"
-					onClick={toggleEditMode}
-					class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-				>
+				<Button onClick={toggleEditMode} class="px-3 py-1.5 text-sm">
 					{isEditMode() ? "Done" : "Edit"}
-				</button>
-				<button
-					type="button"
-					onClick={toggleSettings}
-					class="p-2 text-gray-600 dark:text-gray-400 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-					aria-label="Settings"
-				>
+				</Button>
+				<Button onClick={toggleSettings} class="p-2" aria-label="Settings">
 					<Settings size={20} />
-				</button>
+				</Button>
 
 				<SettingsPopup />
 			</div>

@@ -14,10 +14,8 @@ type Props = Readonly<{
 	isEditMode: Accessor<boolean>;
 	showEdgeShades: Accessor<ShowEdgeShadesState>;
 	colorsLength: Accessor<number>;
-	onDragStart: (index: number) => void;
+	onDragStart: (e: DragEvent, index: number) => void;
 	onDragEnd: () => void;
-	onDragOver: (e: DragEvent, index: number) => void;
-	onDrop: (e: DragEvent, index: number) => void;
 	onDelete: (index: number) => void;
 }>;
 
@@ -71,11 +69,7 @@ export function PaletteRow(props: Props) {
 	});
 
 	return (
-		// biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop requires these handlers
-		<div
-			onDragOver={(e) => props.onDragOver(e, props.index)}
-			onDrop={(e) => props.onDrop(e, props.index)}
-		>
+		<div>
 			<div
 				class={`h-1 rounded-full transition-colors ${showDropBefore() ? "bg-sky-500" : "bg-transparent"}`}
 			/>
@@ -83,12 +77,12 @@ export function PaletteRow(props: Props) {
 			<div
 				class={`flex items-center gap-4 ${props.draggedIndex() === props.index ? "opacity-30" : ""}`}
 				draggable={props.isEditMode()}
-				onDragStart={() => props.onDragStart(props.index)}
+				onDragStart={(e) => props.onDragStart(e, props.index)}
 				onDragEnd={props.onDragEnd}
 			>
 				<Show when={props.isEditMode()}>
 					<span
-						class="text-gray-500 dark:text-gray-400 cursor-grab active:cursor-grabbing"
+						class="text-gray-500 dark:text-gray-400"
 						role="img"
 						aria-label="Reorder"
 					>
@@ -97,6 +91,7 @@ export function PaletteRow(props: Props) {
 				</Show>
 				<div class="flex-1">
 					<ColorPalette
+						index={props.index}
 						color={() => getColor(props.index)}
 						onChangeName={(name) => setColorNameAt(props.index, name)}
 						onChangeInput={(value) => setColorValueAt(props.index, value)}

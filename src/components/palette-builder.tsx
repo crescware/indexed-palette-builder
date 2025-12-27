@@ -4,6 +4,7 @@ import { createSignal, Index } from "solid-js";
 import { useColors } from "../contexts/colors/use-colors";
 import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useShowEdgeShades } from "../contexts/show-edge-shades/use-show-edge-shades";
+import { Button } from "./button";
 import { PaletteRow } from "./palette-row";
 
 export function PaletteBuilder() {
@@ -27,7 +28,7 @@ export function PaletteBuilder() {
 				);
 				const lastPalette = paletteItems[paletteItems.length - 1];
 				if (lastPalette) {
-					const gap = 12; // gap-3 = 0.75rem = 12px
+					const gap = 20; // gap-5 = 1.25rem = 20px
 					paletteContainerRef.scrollBy({
 						top: lastPalette.getBoundingClientRect().height + gap,
 						behavior: "instant",
@@ -41,7 +42,15 @@ export function PaletteBuilder() {
 		deleteColor(index);
 	};
 
-	const handleDragStart = (index: number) => {
+	const handleDragStart = (e: DragEvent, index: number) => {
+		if (e.dataTransfer) {
+			// setData() must be called first to properly initialize the DataTransfer object.
+			// Without this, the browser may briefly show the default copy cursor before
+			// effectAllowed takes effect. Once initialized, effectAllowed = "move" is
+			// applied immediately, showing the move cursor from the start.
+			e.dataTransfer.setData("text/plain", index.toString());
+			e.dataTransfer.effectAllowed = "move";
+		}
 		setDraggedIndex(index);
 	};
 
@@ -50,35 +59,55 @@ export function PaletteBuilder() {
 		setDropTargetIndex(null);
 	};
 
-	const handleDragOver = (e: DragEvent, index: number) => {
+	const handleDragOver = (e: DragEvent) => {
 		e.preventDefault();
 		const dragged = draggedIndex();
-		if (dragged === null || dragged === index) {
+		if (dragged === null || !paletteContainerRef) {
 			setDropTargetIndex(null);
 			return;
 		}
-		setDropTargetIndex(index);
+
+		const rows = paletteContainerRef.querySelectorAll<HTMLElement>(
+			":scope > div:not(:last-child)",
+		);
+		const mouseY = e.clientY;
+
+		for (let i = 0; i < rows.length; i++) {
+			const rect = rows[i].getBoundingClientRect();
+			const midY = rect.top + rect.height / 2;
+			if (mouseY < midY) {
+				setDropTargetIndex(i === dragged ? null : i);
+				return;
+			}
+		}
+		// Mouse is below all rows
+		const lastIndex = rows.length - 1;
+		setDropTargetIndex(lastIndex === dragged ? null : lastIndex);
 	};
 
-	const handleDrop = (e: DragEvent, targetIndex: number) => {
+	const handleDrop = (e: DragEvent) => {
 		e.preventDefault();
 		const dragged = draggedIndex();
-		if (dragged === null || dragged === targetIndex) {
+		const target = dropTargetIndex();
+		if (dragged === null || target === null) {
 			return;
 		}
 
-		reorderColors(dragged, targetIndex);
+		reorderColors(dragged, target);
 
 		setDraggedIndex(null);
 		setDropTargetIndex(null);
 	};
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop container
 		<div
 			ref={(el) => {
 				paletteContainerRef = el;
 			}}
-			class="flex flex-col gap-3 min-h-0 overflow-y-auto px-1"
+			class="flex flex-col gap-5 min-h-0 overflow-y-auto px-6"
+			onDragOver={handleDragOver}
+			onDrop={handleDrop}
 		>
 			<Index each={colors()}>
 				{(_, index) => (
@@ -91,20 +120,17 @@ export function PaletteBuilder() {
 						colorsLength={() => colors().length}
 						onDragStart={handleDragStart}
 						onDragEnd={handleDragEnd}
-						onDragOver={handleDragOver}
-						onDrop={handleDrop}
 						onDelete={handleDeletePalette}
 					/>
 				)}
 			</Index>
-			<button
-				type="button"
+			<Button
 				onClick={handleAddPalette}
-				class="w-full flex flex-col items-center gap-1 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 active:border-gray-500 active:text-gray-700 dark:active:border-gray-400 dark:active:text-gray-200 transition-colors"
+				class="w-full flex items-center justify-center gap-2 py-3"
 			>
 				<Plus size={20} />
 				<span class="text-sm">Add Palette</span>
-			</button>
+			</Button>
 		</div>
 	);
 }
