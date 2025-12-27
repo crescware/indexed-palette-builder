@@ -1,13 +1,29 @@
 import { Check, Copy } from "lucide-solid";
 import { createMemo, createSignal } from "solid-js";
 
+import { useColorFormat } from "../contexts/color-format/use-color-format";
 import { useColors } from "../contexts/colors/use-colors";
+import type { PaletteStep } from "../models/color/generate-palette";
 import { getColorName } from "../models/color/get-color-name";
+import { defaultColorFormat } from "../models/color-format-state";
+import { formatOklch } from "../utils/format-oklch";
 
 export function CssExport() {
+	const { colorFormat } = useColorFormat();
 	const { colors } = useColors();
 	const [showCopied, setShowCopied] = createSignal(false);
 	const [isReturning, setIsReturning] = createSignal(false);
+
+	const formatValue = (item: PaletteStep): string => {
+		const state = colorFormat();
+		const format = state.isLoading ? defaultColorFormat : state.value;
+		switch (format) {
+			case "hex":
+				return item.hex;
+			case "oklch":
+				return formatOklch(item.oklch);
+		}
+	};
 
 	const cssOutput = createMemo(() => {
 		return colors()
@@ -15,7 +31,10 @@ export function CssExport() {
 				const colorName = getColorName(c).replace("#", "");
 				return c.palette
 					.filter((item) => item.shade !== 0 && item.shade !== 1000)
-					.map((item) => `--color-${colorName}-${item.shade}: ${item.hex};`)
+					.map(
+						(item) =>
+							`--color-${colorName}-${item.shade}: ${formatValue(item)};`,
+					)
 					.join("\n");
 			})
 			.join("\n\n");

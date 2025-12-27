@@ -6,13 +6,12 @@ import {
 	type ParentProps,
 } from "solid-js";
 import { isServer } from "solid-js/web";
-import type {
-	ColorFormat,
-	ColorFormatState,
+import {
+	type ColorFormat,
+	type ColorFormatState,
+	defaultColorFormat,
 } from "../../models/color-format-state";
 import { storageKeys } from "../../models/storage/storage";
-
-const defaultColorFormat: ColorFormat = "hex";
 
 export type ColorFormatContextValue = Readonly<{
 	colorFormat: Accessor<ColorFormatState>;
