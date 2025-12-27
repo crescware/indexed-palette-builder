@@ -3,6 +3,7 @@ import { Settings } from "lucide-solid";
 import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useSettings } from "../contexts/settings/use-settings";
 import { Button } from "./button";
+import { ColorFormatSelect } from "./color-format-select";
 import { SettingsPopup } from "./settings-popup";
 
 export function Header() {
@@ -19,7 +20,8 @@ export function Header() {
 				class="relative flex items-center gap-2"
 				ref={setSettingsContainerRef}
 			>
-				<Button onClick={toggleEditMode} class="px-3 py-1.5 text-sm">
+				<ColorFormatSelect />
+				<Button onClick={toggleEditMode} class="px-3 py-1.5 text-sm min-w-16">
 					{isEditMode() ? "Done" : "Edit"}
 				</Button>
 				<Button onClick={toggleSettings} class="p-2" aria-label="Settings">
