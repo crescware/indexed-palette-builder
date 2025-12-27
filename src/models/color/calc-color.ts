@@ -1,3 +1,4 @@
+import Big from "big.js";
 import type { Oklch } from "culori";
 
 import { calcBlendRatio } from "./calc-blend-ratio";
@@ -9,7 +10,7 @@ export function calcColor(
 	closestShade: Shade,
 	oklch: Oklch,
 	shadeDef: ShadeDefinition,
-	chromaScale: number,
+	chromaScale: Big,
 	shadesAround: ReturnType<typeof calcShadesAroundClosest>,
 ): Oklch {
 	if (shade === closestShade) {
@@ -17,14 +18,18 @@ export function calcColor(
 	}
 
 	// Calculate the scaled chroma (calculated)
-	const calculatedC = shadeDef.c * chromaScale;
+	const calculatedC = Big(shadeDef.c).times(chromaScale);
 
 	const targetC = (() => {
 		const blendRatio = calcBlendRatio(shade, closestShade, shadesAround);
-		const blended = oklch.c * (1 - blendRatio) + calculatedC * blendRatio;
+		const oneMinusBlendRatio = Big(1).minus(blendRatio);
+		const blended = Big(oklch.c)
+			.times(oneMinusBlendRatio)
+			.plus(calculatedC.times(blendRatio));
 
 		// Cap at ~0.37 to respect P3 gamut limits
-		return Math.min(blended, 0.37);
+		const maxChroma = Big(0.37);
+		return blended.gt(maxChroma) ? maxChroma.toNumber() : blended.toNumber();
 	})();
 
 	return {

@@ -1,3 +1,4 @@
+import Big from "big.js";
 import { formatHex, type Oklch } from "culori";
 
 import { calcColor } from "./calc-color";
@@ -18,7 +19,7 @@ export function generatePalette(oklch: Oklch): readonly PaletteStep[] {
 	const pattern = selectPattern(oklch);
 	const closestShade = getClosestShade(oklch, pattern);
 	const defaultC = pattern[closestShade].c;
-	const chromaScale = 0.001 < defaultC ? oklch.c / defaultC : 1;
+	const chromaScale = 0.001 < defaultC ? Big(oklch.c).div(defaultC) : Big(1);
 
 	const shades = Object.keys(pattern)
 		.map((v) => parseInt(v, 10))
