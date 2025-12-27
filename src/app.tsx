@@ -3,6 +3,7 @@ import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 
 import "./app.css";
+import { ColorFormatProvider } from "./contexts/color-format/color-format-context";
 import { ColorsProvider } from "./contexts/colors/colors-context";
 import { EditModeProvider } from "./contexts/edit-mode/edit-mode-context";
 import { SettingsProvider } from "./contexts/settings/settings-context";
@@ -16,14 +17,16 @@ export default function App() {
 			root={(props) => (
 				<ThemeProvider>
 					<ShowEdgeShadesProvider>
-						<ColorsProvider>
-							<SettingsProvider>
-								<EditModeProvider>
-									<ThemeLoader />
-									<Suspense>{props.children}</Suspense>
-								</EditModeProvider>
-							</SettingsProvider>
-						</ColorsProvider>
+						<ColorFormatProvider>
+							<ColorsProvider>
+								<SettingsProvider>
+									<EditModeProvider>
+										<ThemeLoader />
+										<Suspense>{props.children}</Suspense>
+									</EditModeProvider>
+								</SettingsProvider>
+							</ColorsProvider>
+						</ColorFormatProvider>
 					</ShowEdgeShadesProvider>
 				</ThemeProvider>
 			)}
