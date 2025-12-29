@@ -1,4 +1,4 @@
-import type { Oklch } from "culori";
+import Big from "big.js";
 import {
 	type BaseIssue,
 	type BaseSchema,
@@ -9,6 +9,8 @@ import {
 	pipe,
 	safeParse,
 } from "valibot";
+
+import type { OklchBig } from "./oklch-big";
 
 export type ShadeDefinition = {
 	l: number;
@@ -63,9 +65,9 @@ const hueRanges = {
 
 function is<T>(
 	schema: BaseSchema<unknown, T, BaseIssue<unknown>>,
-	value: unknown,
+	value: Big,
 ): boolean {
-	return safeParse(schema, value).success;
+	return safeParse(schema, value.toNumber()).success;
 }
 
 const definitelyGray$ = pipe(
@@ -285,17 +287,18 @@ export const orangePattern = {
 	1000: { l: 0, c: 0 },
 } as const satisfies Pattern;
 
-export function selectPattern(oklch: Oklch): Pattern {
-	const h = oklch.h ?? 0;
+export function selectPattern(oklch: OklchBig): Pattern {
+	const h = oklch.h ?? Big(0);
 
 	if (is(lowChroma$, oklch.c)) {
 		const isWarmNeutral =
-			is(warmNeutralHue$, h) && oklch.c < chromaThresholds.warmNeutral$.literal;
+			is(warmNeutralHue$, h) &&
+			oklch.c.lt(chromaThresholds.warmNeutral$.literal);
 
 		const isInNeutralRange = is(neutralBlueHue$, h) || isWarmNeutral;
 
 		const isLowLightNeutral =
-			isInNeutralRange && oklch.c < chromaThresholds.lowLightNeutral$.literal;
+			isInNeutralRange && oklch.c.lt(chromaThresholds.lowLightNeutral$.literal);
 
 		if (is(definitelyGray$, oklch.c)) {
 			return lowSaturationPattern;
