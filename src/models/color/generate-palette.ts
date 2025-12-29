@@ -1,24 +1,26 @@
-import { formatHex, type Oklch } from "culori";
+import Big from "big.js";
 
 import { calcColor } from "./calc-color";
 import { calcShadesAroundClosest } from "./calc-shades-around-closest";
 import { detectStrongCorrection } from "./detect-strong-correction";
+import { formatHexFromOklchBig } from "./format-hex-from-oklch-big";
 import { getClosestShade } from "./get-closest-shade";
+import type { OklchBig } from "./oklch-big";
 import { type Shade, selectPattern } from "./select-pattern";
 
 export type PaletteStep = Readonly<{
 	shade: Shade;
 	hex: string;
-	oklch: Oklch;
+	oklch: OklchBig;
 	isClosest: boolean;
 	needsStrongCorrection: boolean;
 }>;
 
-export function generatePalette(oklch: Oklch): readonly PaletteStep[] {
+export function generatePalette(oklch: OklchBig): readonly PaletteStep[] {
 	const pattern = selectPattern(oklch);
 	const closestShade = getClosestShade(oklch, pattern);
 	const defaultC = pattern[closestShade].c;
-	const chromaScale = 0.001 < defaultC ? oklch.c / defaultC : 1;
+	const chromaScale = 0.001 < defaultC ? oklch.c.div(defaultC) : Big(1);
 
 	const shades = Object.keys(pattern)
 		.map((v) => parseInt(v, 10))
@@ -43,7 +45,7 @@ export function generatePalette(oklch: Oklch): readonly PaletteStep[] {
 
 			return {
 				shade,
-				hex: formatHex(newColor),
+				hex: formatHexFromOklchBig(newColor),
 				oklch: newColor,
 				isClosest,
 				needsStrongCorrection: isClosest && isInputAmbiguous,

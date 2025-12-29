@@ -2,6 +2,7 @@ import { X } from "lucide-solid";
 import { Show } from "solid-js";
 import { isServer } from "solid-js/web";
 
+import { useColorFormat } from "../contexts/color-format/use-color-format";
 import { useColors } from "../contexts/colors/use-colors";
 import { useEditMode } from "../contexts/edit-mode/use-edit-mode";
 import { useSettings } from "../contexts/settings/use-settings";
@@ -13,6 +14,7 @@ export function SettingsPopup() {
 	const { theme, applyTheme, resetTheme } = useTheme();
 	const { showEdgeShades, setShowEdgeShades, resetShowEdgeShades } =
 		useShowEdgeShades();
+	const { resetColorFormat } = useColorFormat();
 	const { isSettingsOpen, closeSettings } = useSettings();
 	const { resetColors } = useColors();
 	const { exitEditMode } = useEditMode();
@@ -42,6 +44,7 @@ export function SettingsPopup() {
 		clearStorage();
 		resetTheme();
 		resetShowEdgeShades();
+		resetColorFormat();
 		resetColors();
 		closeSettings();
 		exitEditMode();

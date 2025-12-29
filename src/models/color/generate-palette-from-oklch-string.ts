@@ -1,14 +1,13 @@
-import { type Oklch, parse } from "culori";
-
 import { generatePalette, type PaletteStep } from "./generate-palette";
+import { parseOklchWithPrecision } from "./parse-oklch-with-precision";
 
 export function generatePaletteFromOklchString(
 	oklchString: string,
 ): readonly PaletteStep[] {
-	const oklchColor = parse(oklchString);
-	if (!oklchColor || oklchColor.mode !== "oklch") {
+	const oklchColor = parseOklchWithPrecision(oklchString);
+	if (!oklchColor) {
 		throw new Error("Invalid OKLCH color string");
 	}
 
-	return generatePalette(oklchColor as Oklch);
+	return generatePalette(oklchColor);
 }

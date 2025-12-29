@@ -1,3 +1,4 @@
+import Big from "big.js";
 import { describe, expect, test } from "vitest";
 
 import { calcBlendRatio } from "./calc-blend-ratio";
@@ -36,7 +37,7 @@ describe("calcBlendRatio()", () => {
 				calcBlendRatio(shade, 500, shadesAroundFor500),
 			);
 
-			expect(actual).toEqual([1.0, 1.0]);
+			expect(actual).toEqual([Big(1), Big(1)]);
 		});
 	});
 
@@ -46,11 +47,17 @@ describe("calcBlendRatio()", () => {
 				calcBlendRatio(shade, 500, shadesAroundFor500),
 			);
 
-			expect(actual).toEqual([1 / 5, 2 / 5, 3 / 5, 4 / 5, 5 / 5]);
+			expect(actual).toEqual([
+				Big(1).div(5),
+				Big(2).div(5),
+				Big(3).div(5),
+				Big(4).div(5),
+				Big(5).div(5),
+			]);
 		});
 
 		test("returns 1.0 when shadesAround.above is empty", () => {
-			expect(calcBlendRatio(1000, 950, shadesAroundFor950)).toBe(1.0);
+			expect(calcBlendRatio(1000, 950, shadesAroundFor950)).toEqual(Big(1));
 		});
 	});
 
@@ -60,17 +67,23 @@ describe("calcBlendRatio()", () => {
 				calcBlendRatio(shade, 500, shadesAroundFor500),
 			);
 
-			expect(actual).toEqual([5 / 5, 4 / 5, 3 / 5, 2 / 5, 1 / 5]);
+			expect(actual).toEqual([
+				Big(5).div(5),
+				Big(4).div(5),
+				Big(3).div(5),
+				Big(2).div(5),
+				Big(1).div(5),
+			]);
 		});
 
 		test("returns 1.0 when shadesAround.below is empty", () => {
-			expect(calcBlendRatio(0, 50, shadesAroundFor50)).toBe(1.0);
+			expect(calcBlendRatio(0, 50, shadesAroundFor50)).toEqual(Big(1));
 		});
 	});
 
 	describe("closest shade itself", () => {
 		test("returns 1.0 when shade equals closestShade", () => {
-			expect(calcBlendRatio(500, 500, shadesAroundFor500)).toBe(1.0);
+			expect(calcBlendRatio(500, 500, shadesAroundFor500)).toEqual(Big(1));
 		});
 	});
 
@@ -80,7 +93,15 @@ describe("calcBlendRatio()", () => {
 				calcBlendRatio(shade, 300, shadesAroundFor300),
 			);
 
-			expect(actual).toEqual([1 / 7, 2 / 7, 3 / 7, 4 / 7, 5 / 7, 6 / 7, 7 / 7]);
+			expect(actual).toEqual([
+				Big(1).div(7),
+				Big(2).div(7),
+				Big(3).div(7),
+				Big(4).div(7),
+				Big(5).div(7),
+				Big(6).div(7),
+				Big(7).div(7),
+			]);
 		});
 
 		test("returns gradual ratio for shades below", () => {
@@ -88,7 +109,7 @@ describe("calcBlendRatio()", () => {
 				calcBlendRatio(shade, 300, shadesAroundFor300),
 			);
 
-			expect(actual).toEqual([3 / 3, 2 / 3, 1 / 3]);
+			expect(actual).toEqual([Big(3).div(3), Big(2).div(3), Big(1).div(3)]);
 		});
 	});
 
@@ -98,7 +119,7 @@ describe("calcBlendRatio()", () => {
 				calcBlendRatio(shade, 700, shadesAroundFor700),
 			);
 
-			expect(actual).toEqual([1 / 3, 2 / 3, 3 / 3]);
+			expect(actual).toEqual([Big(1).div(3), Big(2).div(3), Big(3).div(3)]);
 		});
 
 		test("returns gradual ratio for shades below", () => {
@@ -106,7 +127,15 @@ describe("calcBlendRatio()", () => {
 				calcBlendRatio(shade, 700, shadesAroundFor700),
 			);
 
-			expect(actual).toEqual([7 / 7, 6 / 7, 5 / 7, 4 / 7, 3 / 7, 2 / 7, 1 / 7]);
+			expect(actual).toEqual([
+				Big(7).div(7),
+				Big(6).div(7),
+				Big(5).div(7),
+				Big(4).div(7),
+				Big(3).div(7),
+				Big(2).div(7),
+				Big(1).div(7),
+			]);
 		});
 	});
 });
