@@ -10,8 +10,8 @@ export type OklchBig = Readonly<{
 	l: Big;
 	/** Chroma (unbounded, typically 0-0.4 for sRGB colors) */
 	c: Big;
-	/** Hue in degrees (0-360), undefined for achromatic colors */
+	/** Hue in degrees (0-360). Property does not exist for achromatic colors. */
 	h?: Big;
-	/** Optional alpha channel (0-1) */
+	/** Alpha channel (0-1). Property does not exist when fully opaque. */
 	alpha?: Big;
 }>;

@@ -46,16 +46,37 @@ export function extractPreciseValue(
 
 	const numericTokens = extractNumericTokens(input);
 
-	for (const token of numericTokens) {
-		const tokenInteger = Math.trunc(token.value);
-		if (tokenInteger === integerPart) {
-			const hasPercentSuffix = token.suffix === "%";
-			if (hasPercentSuffix) {
-				return Big(token.numericString).div(100);
-			}
-			return Big(token.numericString);
+	const candidates = numericTokens.filter(
+		(token) => Math.trunc(token.value) === integerPart,
+	);
+
+	if (candidates.length === 0) {
+		return Big(culoriValue);
+	}
+
+	if (candidates.length === 1) {
+		const token = candidates[0];
+		const hasPercentSuffix = token.suffix === "%";
+		if (hasPercentSuffix) {
+			return Big(token.numericString).div(100);
+		}
+		return Big(token.numericString);
+	}
+
+	let bestMatch = candidates[0];
+	let bestDiff = Math.abs(bestMatch.value - displayValue);
+
+	for (const token of candidates.slice(1)) {
+		const diff = Math.abs(token.value - displayValue);
+		if (diff < bestDiff) {
+			bestDiff = diff;
+			bestMatch = token;
 		}
 	}
 
-	return Big(culoriValue);
+	const hasPercentSuffix = bestMatch.suffix === "%";
+	if (hasPercentSuffix) {
+		return Big(bestMatch.numericString).div(100);
+	}
+	return Big(bestMatch.numericString);
 }

@@ -1,4 +1,3 @@
-import Big from "big.js";
 import { type Oklch, parse } from "culori";
 
 import { extractPreciseValue } from "./extract-precise-value";
@@ -24,13 +23,16 @@ export function parseOklchWithPrecision(input: string): OklchBig | null {
 	const isLightnessPercentage = input.includes("%");
 	const l = extractPreciseValue(input, oklch.l, isLightnessPercentage);
 	const c = extractPreciseValue(input, oklch.c, false);
-	const h =
-		oklch.h !== undefined ? extractPreciseValue(input, oklch.h, false) : Big(0);
 
-	if (oklch.alpha !== undefined) {
-		const alpha = extractPreciseValue(input, oklch.alpha, false);
-		return { mode: "oklch", l, c, h, alpha };
-	}
-
-	return { mode: "oklch", l, c, h };
+	return {
+		mode: "oklch",
+		l,
+		c,
+		...(oklch.h !== undefined && {
+			h: extractPreciseValue(input, oklch.h, false),
+		}),
+		...(oklch.alpha !== undefined && {
+			alpha: extractPreciseValue(input, oklch.alpha, false),
+		}),
+	};
 }
