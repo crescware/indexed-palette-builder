@@ -40,7 +40,7 @@ export function ColorPalette(props: Props) {
 		if (closestIndex === -1) return null;
 		return {
 			index: closestIndex,
-			hex: palette[closestIndex].hex,
+			item: palette[closestIndex],
 		};
 	});
 
@@ -121,8 +121,8 @@ export function ColorPalette(props: Props) {
 									: "";
 							return (
 								<div
-									class={`aspect-square transition-all w-full ${roundedClass}`}
-									style={{ "background-color": item.hex }}
+									class={`aspect-square transition-all w-full ${roundedClass}`.trim()}
+									style={{ "background-color": formatColorValue(item) }}
 									title={`${item.shade}: ${formatColorValue(item)}`}
 								/>
 							);
@@ -143,7 +143,7 @@ export function ColorPalette(props: Props) {
 										bottom: `-${offset()}px`,
 										left: `calc(${(data().index / columns) * 100}% - ${offset()}px)`,
 										width: `calc(${(1 / columns) * 100}% + ${offset() * 2}px)`,
-										"background-color": data().hex,
+										"background-color": formatColorValue(data().item),
 										border: `${borderWidth}px solid ${shouldShowHighlight() ? "var(--app-bg)" : "transparent"}`,
 										opacity: shouldShowHighlight() ? 1 : 0,
 									}}
