@@ -69,6 +69,27 @@ describe("generatePaletteFromOklchString", () => {
 		);
 	});
 
+	test("should generate identical palette for alpha and non-alpha OKLCH inputs", () => {
+		const paletteWithAlpha = generatePaletteFromOklchString(
+			"oklch(50% 0.2 30 / 0.5)",
+		);
+		const paletteWithoutAlpha = generatePaletteFromOklchString("oklch(50% 0.2 30)");
+
+		const serialize = (palette: ReturnType<typeof generatePaletteFromOklchString>) =>
+			palette.map((step) => ({
+				shade: step.shade,
+				hex: step.hex,
+				oklch: {
+					l: step.oklch.l.toString(),
+					c: step.oklch.c.toString(),
+					h: step.oklch.h?.toString(),
+				},
+				isClosest: step.isClosest,
+			}));
+
+		expect(serialize(paletteWithAlpha)).toEqual(serialize(paletteWithoutAlpha));
+	});
+
 	describe("palette should contain all expected shades", () => {
 		const expectedShades = [
 			50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950,

@@ -16,18 +16,32 @@ export type PaletteStep = Readonly<{
 	needsStrongCorrection: boolean;
 }>;
 
+function toOpaqueOklch(oklch: OklchBig): OklchBig {
+	return {
+		mode: "oklch",
+		l: oklch.l,
+		c: oklch.c,
+		...(oklch.h !== undefined && { h: oklch.h }),
+	};
+}
+
 export function generatePalette(oklch: OklchBig): readonly PaletteStep[] {
-	const pattern = selectPattern(oklch);
-	const closestShade = getClosestShade(oklch, pattern);
+	const opaqueOklch = toOpaqueOklch(oklch);
+	const pattern = selectPattern(opaqueOklch);
+	const closestShade = getClosestShade(opaqueOklch, pattern);
 	const defaultC = pattern[closestShade].c;
-	const chromaScale = 0.001 < defaultC ? oklch.c.div(defaultC) : Big(1);
+	const chromaScale = 0.001 < defaultC ? opaqueOklch.c.div(defaultC) : Big(1);
 
 	const shades = Object.keys(pattern)
 		.map((v) => parseInt(v, 10))
 		.sort((a, b) => a - b) as Shade[];
 
 	const shadesAround = calcShadesAroundClosest(shades, closestShade);
-	const isInputAmbiguous = detectStrongCorrection(oklch, pattern, closestShade);
+	const isInputAmbiguous = detectStrongCorrection(
+		opaqueOklch,
+		pattern,
+		closestShade,
+	);
 
 	return Object.entries(pattern)
 		.map(([shadeStr, shadeDef]) => {
@@ -37,7 +51,7 @@ export function generatePalette(oklch: OklchBig): readonly PaletteStep[] {
 			const newColor = calcColor(
 				shade,
 				closestShade,
-				oklch,
+				opaqueOklch,
 				shadeDef,
 				chromaScale,
 				shadesAround,

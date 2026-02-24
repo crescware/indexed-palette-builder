@@ -26,5 +26,6 @@ export function formatOklch(color: OklchBig): string {
 	const c = formatValue(color.c);
 	const h = color.h !== undefined ? formatValue(color.h) : "0";
 
+	// Alpha is intentionally not serialized until transparency support is added.
 	return `oklch(${l}% ${c} ${h})`;
 }
