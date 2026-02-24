@@ -73,9 +73,12 @@ describe("generatePaletteFromOklchString", () => {
 		const paletteWithAlpha = generatePaletteFromOklchString(
 			"oklch(50% 0.2 30 / 0.5)",
 		);
-		const paletteWithoutAlpha = generatePaletteFromOklchString("oklch(50% 0.2 30)");
+		const paletteWithoutAlpha =
+			generatePaletteFromOklchString("oklch(50% 0.2 30)");
 
-		const serialize = (palette: ReturnType<typeof generatePaletteFromOklchString>) =>
+		const serialize = (
+			palette: ReturnType<typeof generatePaletteFromOklchString>,
+		) =>
 			palette.map((step) => ({
 				shade: step.shade,
 				hex: step.hex,

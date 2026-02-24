@@ -113,19 +113,19 @@ describe("parseOklchWithPrecision()", () => {
 				input: "oklch(50% 0.2 30 / 50%)",
 				expected: { l: "0.5", alpha: "0.5" },
 			},
-		])(
-			"parses lightness and percentage alpha independently for $input",
-			({ input, expected }) => {
-				const result = parseOklchWithPrecision(input);
-				if (!result) {
-					throw new Error("Expected result to not be null");
-				}
+		])("parses lightness and percentage alpha independently for $input", ({
+			input,
+			expected,
+		}) => {
+			const result = parseOklchWithPrecision(input);
+			if (!result) {
+				throw new Error("Expected result to not be null");
+			}
 
-				expect.soft(result.l).toEqual(Big(expected.l));
-				expect.soft(Object.hasOwn(result, "alpha")).toBe(true);
-				expect.soft(result.alpha).toEqual(Big(expected.alpha));
-			},
-		);
+			expect.soft(result.l).toEqual(Big(expected.l));
+			expect.soft(Object.hasOwn(result, "alpha")).toBe(true);
+			expect.soft(result.alpha).toEqual(Big(expected.alpha));
+		});
 
 		test("alpha property does not exist when not specified", () => {
 			const result = parseOklchWithPrecision("oklch(50% 0.2 30)");

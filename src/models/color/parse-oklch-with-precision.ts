@@ -67,9 +67,11 @@ export function parseOklchWithPrecision(input: string): OklchBig | null {
 		hasPercentageSuffix(lightnessInput),
 	);
 	const c = extractPreciseValue(chromaInput, oklch.c, false);
-	const hueInput = componentInput?.hue ?? (oklch.h !== undefined ? `${oklch.h}` : null);
+	const hueInput =
+		componentInput?.hue ?? (oklch.h !== undefined ? `${oklch.h}` : null);
 	const alphaInput =
-		componentInput?.alpha ?? (oklch.alpha !== undefined ? `${oklch.alpha}` : null);
+		componentInput?.alpha ??
+		(oklch.alpha !== undefined ? `${oklch.alpha}` : null);
 
 	return {
 		mode: "oklch",
