@@ -22,20 +22,20 @@
 		"vitest": "4.0.15"
 	},
 	"engines": {
-		"node": "24.11.1",
-		"npm": "11.6.2"
+		"node": "24.13.0"
 	},
+	"packageManager": "pnpm@10.28.2",
 	"scripts": {
-		"build": "npm run build:scripts && vinxi build",
+		"build": "pnpm run build:scripts && vinxi build",
 		"build:scripts": "tsdown",
-		"dev": "npm run build:scripts && vinxi dev",
-		"start": "vinxi start",
-		"check": "npm run check:types && npm run check:lint && npm run check:no-margin && npm run test",
+		"check": "pnpm run check:types && pnpm run check:lint && pnpm run check:no-margin && pnpm run test",
 		"check:lint": "biome check .",
-		"check:no-margin": "npx tsx scripts/no-margin.ts",
+		"check:no-margin": "pnpm dlx tsx scripts/no-margin.ts",
 		"check:types": "tsgo",
+		"dev": "pnpm run build:scripts && vinxi dev",
 		"fix": "biome check --write . --unsafe",
-		"test": "npm run test:watch -- --run",
+		"start": "vinxi start",
+		"test": "pnpm run test:watch -- --run",
 		"test:watch": "vitest"
 	},
 	"type": "module"
