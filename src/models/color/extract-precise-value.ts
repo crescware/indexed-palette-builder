@@ -34,7 +34,7 @@ function extractNumericTokens(componentInput: string): NumericToken[] {
  * @param componentInput - The original OKLCH component string (e.g., "68.1%" or "75.834")
  * @param culoriValue - The value parsed by culori (may have floating-point errors)
  * @param isPercentage - Whether the value in the string is expressed as a percentage
- * @returns Big.js value normalized to the standard range (percentages divided by 100)
+ * @returns Big.js value normalized to the standard range
  */
 export function extractPreciseValue(
 	componentInput: string,

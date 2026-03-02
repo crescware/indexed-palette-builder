@@ -10,6 +10,8 @@ type OklchComponentInput = Readonly<{
 	alpha: string | null;
 }>;
 
+const oklchChromaPercentScale = 0.4;
+
 function extractOklchComponentInput(input: string): OklchComponentInput | null {
 	const bodyMatch = input.match(/^oklch\(\s*(.+)\s*\)$/i);
 	if (!bodyMatch) {
@@ -40,6 +42,19 @@ function hasPercentageSuffix(value: string): boolean {
 	return value.trim().endsWith("%");
 }
 
+function extractPreciseChromaValue(chromaInput: string, culoriChroma: number) {
+	if (!hasPercentageSuffix(chromaInput)) {
+		return extractPreciseValue(chromaInput, culoriChroma, false);
+	}
+
+	// In oklch(), chroma percentages are relative to 0.4 (100% = 0.4).
+	// Spec (W3C CSS Color 4): https://drafts.csswg.org/css-color-4/#specifying-oklab-oklch
+	const normalizedChroma = culoriChroma / oklchChromaPercentScale;
+	return extractPreciseValue(chromaInput, normalizedChroma, true).times(
+		oklchChromaPercentScale,
+	);
+}
+
 /**
  * Parses an OKLCH color string with precision preservation.
  *
@@ -66,7 +81,7 @@ export function parseOklchWithPrecision(input: string): OklchBig | null {
 		oklch.l,
 		hasPercentageSuffix(lightnessInput),
 	);
-	const c = extractPreciseValue(chromaInput, oklch.c, false);
+	const c = extractPreciseChromaValue(chromaInput, oklch.c);
 	const hueInput =
 		componentInput?.hue ?? (oklch.h !== undefined ? `${oklch.h}` : null);
 	const alphaInput =

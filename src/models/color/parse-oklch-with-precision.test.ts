@@ -1,4 +1,5 @@
 import Big from "big.js";
+import { type Oklch, parse } from "culori";
 import { describe, expect, test } from "vitest";
 
 import { parseOklchWithPrecision } from "./parse-oklch-with-precision";
@@ -172,6 +173,64 @@ describe("parseOklchWithPrecision()", () => {
 			expect.soft(result.l.toString()).toBe(expected.l);
 			expect.soft(result.c.toString()).toBe(expected.c);
 			expect.soft(result.h?.toString()).toBe(expected.h);
+		});
+	});
+
+	describe("percentage chroma", () => {
+		test.each([
+			{ chromaPercent: "100%" },
+			{ chromaPercent: "1.001%" },
+			{ chromaPercent: "1%" },
+			{ chromaPercent: "0.999%" },
+			{ chromaPercent: "0%" },
+		])("matches culori for chroma=$chromaPercent", ({ chromaPercent }) => {
+			const input = `oklch(50% ${chromaPercent} 30)`;
+			const culoriParsed = parse(input);
+			if (!culoriParsed || culoriParsed.mode !== "oklch") {
+				throw new Error("Expected culori to parse valid OKLCH input");
+			}
+
+			const result = parseOklchWithPrecision(input);
+			if (!result) {
+				throw new Error("Expected result to not be null");
+			}
+
+			const culoriOklch = culoriParsed as Oklch;
+			expect.soft(result.l).toEqual(Big(culoriOklch.l));
+			expect.soft(result.c).toEqual(Big(culoriOklch.c));
+			expect.soft(result.h).toEqual(Big(culoriOklch.h ?? 0));
+		});
+	});
+
+	describe("fallback safety", () => {
+		test.each([
+			{
+				name: "leading-dot lightness/chroma with turn hue",
+				input: "oklch(.5 .2 1turn)",
+			},
+			{
+				name: "leading-dot chroma percentage below 1",
+				input: "oklch(50% .999% 30)",
+			},
+			{
+				name: "leading-dot chroma without percentage",
+				input: "oklch(50% .2 30)",
+			},
+		])("matches culori for fallback-dependent syntax: $name", ({ input }) => {
+			const culoriParsed = parse(input);
+			if (!culoriParsed || culoriParsed.mode !== "oklch") {
+				throw new Error("Expected culori to parse valid OKLCH input");
+			}
+
+			const result = parseOklchWithPrecision(input);
+			if (!result) {
+				throw new Error("Expected result to not be null");
+			}
+
+			const culoriOklch = culoriParsed as Oklch;
+			expect.soft(result.l).toEqual(Big(culoriOklch.l));
+			expect.soft(result.c).toEqual(Big(culoriOklch.c));
+			expect.soft(result.h).toEqual(Big(culoriOklch.h ?? 0));
 		});
 	});
 });
