@@ -176,6 +176,51 @@ describe("parseOklchWithPrecision()", () => {
 		});
 	});
 
+	describe("non-canonical numeric syntax", () => {
+		test("preserves high precision for leading-dot numbers", () => {
+			const lightnessToken = ".123456789012345678";
+			const chromaToken = ".234567890123456789";
+			const result = parseOklchWithPrecision(
+				`oklch(${lightnessToken} ${chromaToken} 30)`,
+			);
+			if (!result) {
+				throw new Error("Expected result to not be null");
+			}
+
+			expect(result.l.toString()).toBe("0.123456789012345678");
+			expect(result.c.toString()).toBe("0.234567890123456789");
+			expect(result.h?.toString()).toBe("30");
+		});
+
+		test("preserves high precision for scientific-notation numbers", () => {
+			const lightnessToken = "1.234567890123456789e-1";
+			const chromaToken = "2.34567890123456789e-1";
+			const hueToken = "3e1";
+			const result = parseOklchWithPrecision(
+				`oklch(${lightnessToken} ${chromaToken} ${hueToken})`,
+			);
+			if (!result) {
+				throw new Error("Expected result to not be null");
+			}
+
+			expect(result.l.toString()).toBe("0.1234567890123456789");
+			expect(result.c.toString()).toBe("0.234567890123456789");
+			expect(result.h?.toString()).toBe("30");
+		});
+
+		test("preserves precision for multiline OKLCH input", () => {
+			const input = "oklch(\n\t.123456789012345678 .234567890123456789 30\n)";
+			const result = parseOklchWithPrecision(input);
+			if (!result) {
+				throw new Error("Expected result to not be null");
+			}
+
+			expect(result.l.toString()).toBe("0.123456789012345678");
+			expect(result.c.toString()).toBe("0.234567890123456789");
+			expect(result.h?.toString()).toBe("30");
+		});
+	});
+
 	describe("percentage chroma", () => {
 		test.each([
 			{ chromaPercent: "100%" },

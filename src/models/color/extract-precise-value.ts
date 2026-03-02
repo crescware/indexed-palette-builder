@@ -13,7 +13,8 @@ type NumericToken = Readonly<{
  * Extracts all numeric tokens from an OKLCH component string.
  */
 function extractNumericTokens(componentInput: string): NumericToken[] {
-	const pattern = /(-?\d+(?:\.\d+)?)(%|deg|rad|grad|turn)?/g;
+	const pattern =
+		/([+-]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][+-]?\d+)?)(%|deg|rad|grad|turn)?/g;
 	const matches = componentInput.matchAll(pattern);
 
 	return Array.from(matches, (match) => {

@@ -13,7 +13,7 @@ type OklchComponentInput = Readonly<{
 const oklchChromaPercentScale = 0.4;
 
 function extractOklchComponentInput(input: string): OklchComponentInput | null {
-	const bodyMatch = input.match(/^oklch\(\s*(.+)\s*\)$/i);
+	const bodyMatch = input.match(/^oklch\(\s*([\s\S]+)\s*\)$/i);
 	if (!bodyMatch) {
 		return null;
 	}
