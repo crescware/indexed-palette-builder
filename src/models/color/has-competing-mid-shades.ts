@@ -8,6 +8,6 @@ export function hasCompetingMidShades(
 		secondClosest !== null &&
 		closest.shade === 400 &&
 		secondClosest.shade === 500 &&
-		Math.abs(closest.diff - secondClosest.diff) < 0.015
+		closest.diff.minus(secondClosest.diff).abs().lt(0.015)
 	);
 }

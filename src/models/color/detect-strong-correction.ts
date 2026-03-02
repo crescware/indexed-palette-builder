@@ -1,7 +1,8 @@
-import type { Oklch } from "culori";
+import Big from "big.js";
 import { literal } from "valibot";
 
 import { calcClosest } from "./calc-closest";
+import type { OklchBig } from "./oklch-big";
 import type { Pattern, Shade } from "./select-pattern";
 
 const correctionThresholds = {
@@ -10,7 +11,7 @@ const correctionThresholds = {
 } as const;
 
 export function detectStrongCorrection(
-	oklchColor: Oklch,
+	oklchColor: OklchBig,
 	pattern: Pattern,
 	closestShade: Shade,
 ): boolean {
@@ -20,14 +21,16 @@ export function detectStrongCorrection(
 
 	const { closest, secondClosest } = calcClosest(pattern, oklchColor.l);
 
-	if (correctionThresholds.lightnessDistance$.literal < closest.diff) {
+	if (Big(correctionThresholds.lightnessDistance$.literal).lt(closest.diff)) {
 		return true;
 	}
 
 	if (
 		secondClosest !== null &&
-		Math.abs(closest.diff - secondClosest.diff) <
-			correctionThresholds.lightnessAmbiguity$.literal
+		closest.diff
+			.minus(secondClosest.diff)
+			.abs()
+			.lt(correctionThresholds.lightnessAmbiguity$.literal)
 	) {
 		return true;
 	}

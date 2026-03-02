@@ -1,31 +1,47 @@
-import { formatHex, type Oklch } from "culori";
+import Big from "big.js";
 
 import { calcColor } from "./calc-color";
 import { calcShadesAroundClosest } from "./calc-shades-around-closest";
 import { detectStrongCorrection } from "./detect-strong-correction";
+import { formatHexFromOklchBig } from "./format-hex-from-oklch-big";
 import { getClosestShade } from "./get-closest-shade";
+import type { OklchBig } from "./oklch-big";
 import { type Shade, selectPattern } from "./select-pattern";
 
 export type PaletteStep = Readonly<{
 	shade: Shade;
 	hex: string;
-	oklch: Oklch;
+	oklch: OklchBig;
 	isClosest: boolean;
 	needsStrongCorrection: boolean;
 }>;
 
-export function generatePalette(oklch: Oklch): readonly PaletteStep[] {
-	const pattern = selectPattern(oklch);
-	const closestShade = getClosestShade(oklch, pattern);
+function toOpaqueOklch(oklch: OklchBig): OklchBig {
+	return {
+		mode: "oklch",
+		l: oklch.l,
+		c: oklch.c,
+		...(oklch.h !== undefined && { h: oklch.h }),
+	};
+}
+
+export function generatePalette(oklch: OklchBig): readonly PaletteStep[] {
+	const opaqueOklch = toOpaqueOklch(oklch);
+	const pattern = selectPattern(opaqueOklch);
+	const closestShade = getClosestShade(opaqueOklch, pattern);
 	const defaultC = pattern[closestShade].c;
-	const chromaScale = 0.001 < defaultC ? oklch.c / defaultC : 1;
+	const chromaScale = 0.001 < defaultC ? opaqueOklch.c.div(defaultC) : Big(1);
 
 	const shades = Object.keys(pattern)
 		.map((v) => parseInt(v, 10))
 		.sort((a, b) => a - b) as Shade[];
 
 	const shadesAround = calcShadesAroundClosest(shades, closestShade);
-	const isInputAmbiguous = detectStrongCorrection(oklch, pattern, closestShade);
+	const isInputAmbiguous = detectStrongCorrection(
+		opaqueOklch,
+		pattern,
+		closestShade,
+	);
 
 	return Object.entries(pattern)
 		.map(([shadeStr, shadeDef]) => {
@@ -35,7 +51,7 @@ export function generatePalette(oklch: Oklch): readonly PaletteStep[] {
 			const newColor = calcColor(
 				shade,
 				closestShade,
-				oklch,
+				opaqueOklch,
 				shadeDef,
 				chromaScale,
 				shadesAround,
@@ -43,7 +59,7 @@ export function generatePalette(oklch: Oklch): readonly PaletteStep[] {
 
 			return {
 				shade,
-				hex: formatHex(newColor),
+				hex: formatHexFromOklchBig(newColor),
 				oklch: newColor,
 				isClosest,
 				needsStrongCorrection: isClosest && isInputAmbiguous,

@@ -1,8 +1,11 @@
 import type { Accessor } from "solid-js";
 import { createMemo, createSignal, Show } from "solid-js";
 
+import { useColorFormat } from "../contexts/color-format/use-color-format";
 import type { ColorState } from "../models/color/color-state";
 import type { PaletteStep } from "../models/color/generate-palette";
+import { defaultColorFormat } from "../models/color-format-state";
+import { formatOklch } from "../utils/format-oklch";
 
 type Props = Readonly<{
 	index: number;
@@ -17,7 +20,19 @@ type Props = Readonly<{
 }>;
 
 export function ColorPalette(props: Props) {
+	const { colorFormat } = useColorFormat();
 	const [isColorInputFocused, setIsColorInputFocused] = createSignal(false);
+
+	const formatColorValue = (item: PaletteStep): string => {
+		const state = colorFormat();
+		const format = state.isLoading ? defaultColorFormat : state.value;
+		switch (format) {
+			case "hex":
+				return item.hex;
+			case "oklch":
+				return formatOklch(item.oklch);
+		}
+	};
 
 	const closestSwatchData = createMemo(() => {
 		const palette = props.displayedPalette();
@@ -25,7 +40,7 @@ export function ColorPalette(props: Props) {
 		if (closestIndex === -1) return null;
 		return {
 			index: closestIndex,
-			hex: palette[closestIndex].hex,
+			item: palette[closestIndex],
 		};
 	});
 
@@ -106,9 +121,9 @@ export function ColorPalette(props: Props) {
 									: "";
 							return (
 								<div
-									class={`aspect-square transition-all w-full ${roundedClass}`}
-									style={{ "background-color": item.hex }}
-									title={`${item.shade}: ${item.hex}`}
+									class={`aspect-square transition-all w-full ${roundedClass}`.trim()}
+									style={{ "background-color": formatColorValue(item) }}
+									title={`${item.shade}: ${formatColorValue(item)}`}
 								/>
 							);
 						})}
@@ -128,7 +143,7 @@ export function ColorPalette(props: Props) {
 										bottom: `-${offset()}px`,
 										left: `calc(${(data().index / columns) * 100}% - ${offset()}px)`,
 										width: `calc(${(1 / columns) * 100}% + ${offset() * 2}px)`,
-										"background-color": data().hex,
+										"background-color": formatColorValue(data().item),
 										border: `${borderWidth}px solid ${shouldShowHighlight() ? "var(--app-bg)" : "transparent"}`,
 										opacity: shouldShowHighlight() ? 1 : 0,
 									}}

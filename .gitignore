@@ -24,6 +24,12 @@ public/scripts
 # Temp
 gitignore
 
+# Coverage
+coverage/
+.nyc_output/
+*.lcov
+lcov.info
+
 # System Files
 .DS_Store
 Thumbs.db

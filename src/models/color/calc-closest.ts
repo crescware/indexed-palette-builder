@@ -1,8 +1,10 @@
+import type Big from "big.js";
+
 import type { Pattern, Shade } from "./select-pattern";
 
 type Closest = Readonly<{
 	shade: Shade;
-	diff: number;
+	diff: Big;
 }>;
 
 type Return = Readonly<{
@@ -10,14 +12,14 @@ type Return = Readonly<{
 	secondClosest: Closest | null;
 }>;
 
-export function calcClosest(pattern: Pattern, l: number): Return {
+export function calcClosest(pattern: Pattern, l: Big): Return {
 	const sortedCandidates = Object.entries(pattern)
 		.reduce<Closest[]>((acc, [shadeStr, values]) => {
-			const diff = Math.abs(l - values.l);
+			const diff = l.minus(values.l).abs();
 			acc.push({ shade: Number(shadeStr) as Shade, diff });
 			return acc;
 		}, [])
-		.sort((a, b) => a.diff - b.diff);
+		.sort((a, b) => a.diff.minus(b.diff).toNumber());
 
 	const [closest, secondClosest] = sortedCandidates;
 

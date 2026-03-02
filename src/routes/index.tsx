@@ -13,7 +13,7 @@ export default function Home() {
 				<main class="text-center h-full flex flex-col max-w-7xl w-full animate-fade-in pb-6">
 					<Header />
 
-					<div class="grid grid-cols-1 lg:grid-cols-[7fr_3fr] w-full flex-1 min-h-0">
+					<div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] w-full flex-1 min-h-0">
 						<PaletteBuilder />
 						<CssExport />
 					</div>
