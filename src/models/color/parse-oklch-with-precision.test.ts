@@ -233,4 +233,33 @@ describe("parseOklchWithPrecision()", () => {
 			expect.soft(result.h).toEqual(Big(culoriOklch.h ?? 0));
 		});
 	});
+
+	describe("whitespace fallback path", () => {
+		test.each([
+			{ input: " oklch(50% 0.2 30)" },
+			{ input: "oklch(50% 0.2 30) " },
+			{ input: "\toklch(50% 0 none)" },
+			{ input: " oklch(50% 0.2 30 / 80%)" },
+		])("matches culori for input wrapped by whitespace: $input", ({ input }) => {
+			const culoriParsed = parse(input);
+			if (!culoriParsed || culoriParsed.mode !== "oklch") {
+				throw new Error("Expected culori to parse valid OKLCH input");
+			}
+
+			const result = parseOklchWithPrecision(input);
+			if (!result) {
+				throw new Error("Expected result to not be null");
+			}
+
+			const culoriOklch = culoriParsed as Oklch;
+			expect.soft(result.l).toEqual(Big(culoriOklch.l));
+			expect.soft(result.c).toEqual(Big(culoriOklch.c));
+			const expectedHue =
+				culoriOklch.h === undefined ? undefined : Big(culoriOklch.h);
+			const expectedAlpha =
+				culoriOklch.alpha === undefined ? undefined : Big(culoriOklch.alpha);
+			expect.soft(result.h).toEqual(expectedHue);
+			expect.soft(result.alpha).toEqual(expectedAlpha);
+		});
+	});
 });

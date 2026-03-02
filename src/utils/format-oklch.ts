@@ -15,9 +15,6 @@ const maxDecimals = 6;
  */
 function formatValue(value: Big): string {
 	const fixed = value.toFixed(maxDecimals);
-	if (!fixed.includes(".")) {
-		return fixed;
-	}
 	return fixed.replace(/\.?0+$/, "");
 }
 

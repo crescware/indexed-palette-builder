@@ -30,6 +30,11 @@ const shadesAroundFor950 = {
 	below: [900, 800, 700, 600, 500, 400, 300, 200, 100, 50],
 } as const satisfies ShadesAround;
 
+const shadesAroundFor500WithoutAbove = {
+	above: [],
+	below: [400, 300, 200, 100, 50],
+} as const satisfies ShadesAround;
+
 describe("calcBlendRatio()", () => {
 	describe("edge shades", () => {
 		test("returns 1.0 for shade 0 and 1000", () => {
@@ -57,6 +62,12 @@ describe("calcBlendRatio()", () => {
 		});
 
 		test("returns 1.0 when shadesAround.above is empty", () => {
+			expect(calcBlendRatio(600, 500, shadesAroundFor500WithoutAbove)).toEqual(
+				Big(1),
+			);
+		});
+
+		test("returns 1.0 for top edge shade even when above is empty", () => {
 			expect(calcBlendRatio(1000, 950, shadesAroundFor950)).toEqual(Big(1));
 		});
 	});
